@@ -1,6 +1,6 @@
 # Project templates
 
-A family of opinionated scaffolds for solo-built mobile MVPs. One Gitea repo, one subdir per stack. Pick the stack — get a lean main-loop Claude Code workflow (a 7-role agent roster + 17 slash commands; roles run as main-loop "hats" by default, agents are opt-in), 3 swappable design systems, QA gate, tracking plan, launch playbook. Tuned for Claude Pro usage limits.
+A family of opinionated scaffolds for solo-built mobile MVPs. One GitHub repo, one subdir per stack. Pick the stack — get a lean main-loop Claude Code workflow (a 7-role agent roster + 17 slash commands; roles run as main-loop "hats" by default, agents are opt-in), 3 swappable design systems, QA gate, tracking plan, launch playbook. Tuned for Claude Pro usage limits.
 
 ## Stacks shipped
 
@@ -15,7 +15,7 @@ Both share the same workflow shape, design systems, and standing rules. Pick by 
 
 ```bash
 # Once: clone this repo somewhere you can find it
-git clone https://gitea.com/daki.tle.26/ai-project-template.git ~/Documents/templates
+git clone https://github.com/dtruong21/ai-project-template.git ~/Documents/templates
 
 # Each new project: one command
 ~/Documents/templates/scripts/new-project.sh react-native ~/Documents/my-new-app

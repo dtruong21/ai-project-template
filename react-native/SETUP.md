@@ -8,7 +8,7 @@ This template gives you the Claude config + docs scaffolding. You bring the actu
 
 ```bash
 # Clone — replaces the directory name with your project's name
-git clone https://gitea.com/daki.tle.26/ai-project-template.git my-new-app
+git clone https://github.com/dtruong21/ai-project-template.git my-new-app
 cd my-new-app
 
 # Detach from the template's git history — this project gets its own

@@ -39,7 +39,7 @@ SRC="$REPO_ROOT/$STACK"
 
 if [[ ! -d "$SRC" ]]; then
   echo "Error: stack source not found at $SRC"
-  echo "Did you clone the template repo fully? Run: git clone https://gitea.com/daki.tle.26/ai-project-template.git"
+  echo "Did you clone the template repo fully? Run: git clone https://github.com/dtruong21/ai-project-template.git"
   exit 1
 fi
 

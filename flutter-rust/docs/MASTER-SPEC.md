@@ -10,6 +10,8 @@ Flutter SDK pinned to **3.44.x** via `.fvmrc`. Dart SDK comes from Flutter. All 
 
 ### Runtime
 
+`pubspec.yaml` is the source of truth for what is installed. The starter installs only what the running app uses (Firebase core/auth, Riverpod, go_router, http, dotenv, google_fonts, flutter_rust_bridge). Other rows below are the approved pick for that job — `flutter pub add` them when a feature first needs one.
+
 | Package | Why |
 |---|---|
 | `firebase_core` | Initializes FlutterFire. Required first import in `main()`. |

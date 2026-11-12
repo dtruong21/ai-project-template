@@ -172,7 +172,7 @@ Row(
 In `main.dart` (or your app shell):
 
 ```dart
-import 'package:app_name/core/design/theme.dart';
+import 'package:app/core/design/theme.dart';
 
 MaterialApp.router(
   theme: notionGithubLightTheme(),

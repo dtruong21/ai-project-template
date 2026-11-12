@@ -12,6 +12,7 @@
 //
 // Never import `tokens.dart` from a screen — go through the theme.
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -98,24 +99,25 @@ ThemeData buildTheme(Brightness brightness) {
   final isDark = brightness == Brightness.dark;
   final palette = isDark ? AppColors.dark : AppColors.light;
 
-  final colorScheme = ColorScheme.fromSeed(
-    seedColor: AppColors.seed,
-    brightness: brightness,
-    dynamicSchemeVariant: DynamicSchemeVariant.neutral,
-  ).copyWith(
-    primary: palette.accent,
-    onPrimary: isDark ? AppColors.dark.bg : Colors.white,
-    surface: palette.bg,
-    onSurface: palette.text,
-    surfaceContainerLowest: palette.bg,
-    surfaceContainerLow: palette.surface,
-    surfaceContainer: palette.surface,
-    surfaceContainerHigh: palette.surface,
-    surfaceContainerHighest: palette.surface,
-    outline: palette.border,
-    outlineVariant: palette.divider,
-    error: palette.danger,
-  );
+  final colorScheme =
+      ColorScheme.fromSeed(
+        seedColor: AppColors.seed,
+        brightness: brightness,
+        dynamicSchemeVariant: DynamicSchemeVariant.neutral,
+      ).copyWith(
+        primary: palette.accent,
+        onPrimary: isDark ? AppColors.dark.bg : Colors.white,
+        surface: palette.bg,
+        onSurface: palette.text,
+        surfaceContainerLowest: palette.bg,
+        surfaceContainerLow: palette.surface,
+        surfaceContainer: palette.surface,
+        surfaceContainerHigh: palette.surface,
+        surfaceContainerHighest: palette.surface,
+        outline: palette.border,
+        outlineVariant: palette.divider,
+        error: palette.danger,
+      );
 
   final textTheme = _buildTextTheme(palette.text, palette.muted);
 
@@ -280,7 +282,7 @@ ThemeData buildTheme(Brightness brightness) {
       modalBackgroundColor: palette.surface,
       modalBarrierColor: AppColors.dark.bg.withValues(alpha: 0.6),
       elevation: 0,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(AppRadius.lg),
         ),
@@ -305,14 +307,13 @@ TextTheme _buildTextTheme(Color text, Color muted) {
   final base = GoogleFonts.interTextTheme();
 
   TextStyle apply(TextStyle template, {Color? color}) {
-    return base.bodyMedium!
-        .copyWith(
-          fontSize: template.fontSize,
-          height: template.height,
-          fontWeight: template.fontWeight,
-          letterSpacing: template.letterSpacing,
-          color: color ?? text,
-        );
+    return base.bodyMedium!.copyWith(
+      fontSize: template.fontSize,
+      height: template.height,
+      fontWeight: template.fontWeight,
+      letterSpacing: template.letterSpacing,
+      color: color ?? text,
+    );
   }
 
   return TextTheme(

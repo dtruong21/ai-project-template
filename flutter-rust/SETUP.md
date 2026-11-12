@@ -1,16 +1,34 @@
-# Template setup — instantiate a new Flutter + Rust + Cloudflare project
+# Setup — from template to running app
 
-> **Partly verified:** the Rust workspace and the Worker (Step 7, local) were built and tested. Step 5.5 (bridge integration into a real Flutter project) and deploying were not run end to end — expect to adjust small things there, and update this file when you do.
+This stack is a **complete, runnable app**: Flutter project, compiled-in Rust library, generated bindings, and a Worker API are all in the repo. Steps 1–2 get it running in a few minutes. Steps 3 onward make it yours.
 
-This template gives you the Claude config, docs scaffolding, and a Rust workspace (shared rules + Worker API). You bring the actual Flutter project.
+**Prerequisites**
 
-**Prerequisites:** Flutter SDK, Rust via [rustup](https://rustup.rs), Node.js (for `npx wrangler`), a Cloudflare account, a Firebase project. The steps below are the one-time bootstrap to wire them together.
+| Tool | Check | Install |
+|---|---|---|
+| Flutter 3.44+ | `flutter --version` | https://docs.flutter.dev/get-started |
+| Rust (stable) | `cargo --version` | https://rustup.rs |
+| Node.js 20+ | `node --version` | for `npx wrangler` |
+| Xcode 15+ and/or Android SDK | `flutter doctor` | iOS deployment target is 15.0 |
+
+One-time Rust setup:
+
+```bash
+# iOS + Android + Worker targets
+rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios \
+  aarch64-linux-android armv7-linux-androideabi x86_64-linux-android wasm32-unknown-unknown
+rustup component add rustfmt
+```
+
+Only needed when you change Rust code exposed to Dart (version must match `pubspec.yaml`):
+
+```bash
+cargo install flutter_rust_bridge_codegen --version 2.13.0
+```
 
 ---
 
-## Step 1 — Bootstrap a new project from this template
-
-This template lives in the `flutter-rust/` subdir of the multi-stack templates repo. Easiest way to start a new project:
+## Step 1 — Create the project
 
 ```bash
 # Once: clone the templates repo somewhere you can find it
@@ -18,82 +36,101 @@ git clone https://github.com/dtruong21/ai-project-template.git ~/Documents/templ
 
 # Each new project: one command
 ~/Documents/templates/scripts/new-project.sh flutter-rust ~/Documents/my-new-app
-
-# Then drop this SETUP.md after you're done — it's not project content
 cd ~/Documents/my-new-app
-rm SETUP.md
 ```
 
-The helper copies `flutter-rust/` into the target dir (excluding `.git`) and initializes a fresh `git` repo on `main`.
-
-(If you've already cloned the templates repo, you can manually `cp -R ~/Documents/templates/flutter-rust/. ~/Documents/my-new-app/ && cd ~/Documents/my-new-app && git init -b main` — same outcome.)
+The helper copies this stack, creates `.env` from `.env.example`, and starts a fresh git repo on `main`.
 
 ---
 
-## Step 2 — Initialize the Flutter project on top
+## Step 2 — Run it
 
-The template carries no native code, no `pubspec.yaml`, no platform folders. Generate them with the Flutter CLI:
-
-```bash
-# From inside the new project dir.
-# This generates pubspec.yaml, android/, ios/, and a default lib/main.dart
-# (the default main.dart will be replaced in Step 6).
-flutter create . --org com.daki.<projectname> --platforms=ios,android
-```
-
-Then add the canonical deps from the master spec, grouped logically:
+Terminal 1 — the API, with a local database:
 
 ```bash
-# Firebase — Auth + push only (no Firestore, no Functions)
-flutter pub add firebase_core firebase_auth firebase_messaging
-
-# Worker API client
-flutter pub add http
-
-# State management (Riverpod codegen)
-flutter pub add flutter_riverpod riverpod_annotation
-
-# Models (freezed + JSON)
-flutter pub add freezed_annotation json_annotation
-
-# Routing (go_router typed routes)
-flutter pub add go_router
-
-# UI
-flutter pub add google_fonts lucide_icons flutter_animate
-
-# Observability + analytics
-flutter pub add sentry_flutter posthog_flutter
-
-# Config
-flutter pub add flutter_dotenv
-
-# Dev dependencies — codegen + lint + test
-flutter pub add --dev build_runner freezed json_serializable \
-  riverpod_generator riverpod_lint custom_lint go_router_builder \
-  mocktail very_good_analysis flutter_launcher_icons flutter_native_splash
-
-# Integration tests (SDK-provided — manual add to pubspec dev_dependencies)
-# integration_test:
-#   sdk: flutter
+cd rust/api
+npx wrangler d1 migrations apply DB --local
+npx wrangler dev                       # http://localhost:8787
 ```
 
-Pin versions to those in the master spec (`docs/MASTER-SPEC.md` or the build context). Pin the Flutter SDK in `.fvmrc` to match CI.
+Terminal 2 — the app:
 
-Enable strict lints by setting `analysis_options.yaml`:
+```bash
+flutter pub get
+flutter devices                        # pick a simulator/emulator id
+flutter run -d <device-id>
+```
 
-```yaml
-include: package:very_good_analysis/analysis_options.yaml
-analyzer:
-  plugins:
-    - custom_lint
+The first build compiles the Rust library and takes a few minutes. The home screen shows three checks:
+
+| Check | Expected now | Fix if red |
+|---|---|---|
+| Rust bridge | ✅ loaded | rebuild; see Troubleshooting |
+| API | ✅ reachable | is `wrangler dev` running? Android emulator: set `API_BASE_URL=http://10.0.2.2:8787` in `.env` |
+| Firebase Auth | ❌ not configured | expected — Step 3 |
+
+Tap **Send feedback** and send an empty message: "Feedback can't be empty." comes from the Rust validation in `rust/shared`. With text, you get "Sign in is required" until Step 3.
+
+Run the tests:
+
+```bash
+flutter test                           # widget tests
+(cd rust && cargo test)                # shared validation rules
+(cd rust/core && cargo test)           # app-side payload builders
 ```
 
 ---
 
-## Step 3 — Fill in the placeholders
+## Step 3 — Connect Firebase (Auth only)
 
-The template uses `{{PROJECT_NAME}}` and other markers. Run a quick find/replace in your editor:
+1. Create a project at https://console.firebase.google.com
+2. **Authentication → Sign-in method → enable Anonymous.** (Add Email/Google/Apple later. Avoid SMS sign-in — it is billed per message and is the largest cost at scale.)
+3. Do **not** create Firestore, Functions or Storage — this stack does not use them.
+4. Generate the app config — this **replaces** the placeholder `lib/firebase_options.dart`:
+
+```bash
+dart pub global activate flutterfire_cli
+flutterfire configure --project=<your-firebase-project-id>
+```
+
+Commit the generated file. Its API key is not a secret — the Worker verifying the ID token is the security model (`docs/SECURITY.md`).
+
+5. Tell the Worker which Firebase project to trust — `rust/api/wrangler.toml`:
+
+```toml
+[vars]
+FIREBASE_PROJECT_ID = "<your-firebase-project-id>"
+```
+
+6. Restart `wrangler dev` and the app (full restart, not hot reload). All three checks are now green. Send feedback, then look at the row:
+
+```bash
+cd rust/api
+npx wrangler d1 execute DB --local --command "SELECT uid, category, body FROM feedback"
+```
+
+That is the whole path working: Flutter → Rust validation → HTTPS with Firebase ID token → Worker verifies → D1.
+
+---
+
+## Step 4 — Make it yours
+
+**Names and ids.** The template ships as `com.example.app` / "App". Change:
+
+| What | Where |
+|---|---|
+| Android application id + namespace | `android/app/build.gradle.kts` (`applicationId`, `namespace`) and the folder path under `android/app/src/main/kotlin/` |
+| Android display name | `android/app/src/main/AndroidManifest.xml` → `android:label` |
+| iOS bundle id | `ios/Runner.xcodeproj/project.pbxproj` → every `PRODUCT_BUNDLE_IDENTIFIER` (or Xcode → Runner → Signing) |
+| iOS display name | `ios/Runner/Info.plist` → `CFBundleDisplayName` |
+| App title in code | `lib/app.dart` → `title:` and the `AppBar` in `lib/features/home/` |
+| Worker + database name | `rust/api/wrangler.toml` → `name`, `database_name` |
+
+Do this **before** `flutterfire configure` if you can — Firebase registers the bundle ids. If you already ran it, run it again after renaming.
+
+The Dart package name stays `app` (in `pubspec.yaml` and every `package:app/...` import) and the Rust crate stays `rust_lib_app`. Neither is user-visible; renaming them touches generated code for no gain.
+
+**Doc placeholders.** Find/replace in your editor:
 
 | Placeholder | What to put |
 |---|---|
@@ -103,325 +140,108 @@ The template uses `{{PROJECT_NAME}}` and other markers. Run a quick find/replace
 | `{{DIFFERENTIATOR}}` | One sentence — what makes it different |
 | `{{DATE}}` | Today's date |
 | `{{N}}` (in PRD constraints) | Number of weeks budgeted |
-| `{{PROJECT_SLUG}}` | lowercase-dashed name for the Worker + D1 database (`rust/api/wrangler.toml`) |
-| `{{FIREBASE_PROJECT_ID}}` | Firebase project id — filled in Step 5 (`rust/api/wrangler.toml`) |
-| `{{D1_DATABASE_ID}}` | printed by `wrangler d1 create` — filled in Step 7 (`rust/api/wrangler.toml`) |
 
-Files that need editing:
-- `CLAUDE.md`
-- `docs/PRD.md`
-- `docs/DESIGN.md`
-- `docs/ROADMAP.md`
-- `docs/SECURITY.md`
-- `docs/RELEASE.md`
-- `docs/STORE_METADATA.md`
-- `docs/legal/privacy.md`
-- `docs/legal/terms.md`
-- `rust/api/wrangler.toml`
-
-A one-liner that does most of the work (replace `MyApp` first):
 ```bash
-PROJECT_NAME="MyApp" grep -rl "{{PROJECT_NAME}}" . --exclude-dir=.dart_tool --exclude-dir=build \
+PROJECT_NAME="MyApp" grep -rl "{{PROJECT_NAME}}" . --exclude-dir=.dart_tool --exclude-dir=build --exclude-dir=target \
   | xargs sed -i "" "s/{{PROJECT_NAME}}/$PROJECT_NAME/g"
 ```
 
+Then delete this `SETUP.md` — it is not project content.
+
 ---
 
-## Step 3.5 — Pick a design system
+## Step 5 — Pick a design system
 
-The template ships with three pre-built design systems under [`design-systems/`](design-systems/). All three are cross-platform (iOS + Android). Pick one based on your project's vibe:
+The app ships with `notion-github` pre-installed in `lib/core/design/`. Two more live in [`design-systems/`](design-systems/):
 
 | System | Vibe | Best for |
 |---|---|---|
-| `notion-github` | Calm, data-dense | Trackers, productivity |
+| `notion-github` (default) | Calm, data-dense | Trackers, productivity |
 | `linear-minimal` | Sharp, monochrome | SaaS tools, dev apps |
 | `warm-playful` | Soft, rounded | Consumer, wellness, habit, journal |
 
-Read [`design-systems/README.md`](design-systems/README.md) and inspect each `mood.svg` before deciding. When torn, default to `notion-github` — most neutral and ages best.
+```bash
+./scripts/pick-design-system.sh warm-playful     # or keep the default: notion-github
+```
 
-Run the picker:
+The script copies `tokens.dart` + `theme.dart` into `lib/core/design/`, `DESIGN.md` into `docs/`, and removes `design-systems/`. Every system exposes the same `buildTheme(Brightness)`, so `lib/app.dart` needs no change — restart the app to see it.
+
+**Switching later is expensive.** After 3+ screens expect 1–2 days. Pick deliberately.
+
+---
+
+## Step 6 — Define your pillars in `docs/PRD.md`
+
+Replace the pillar placeholders with 2–4 *actual* pillars. **This is the most important step.** Every future feature is scored against them by `/spec` and `/scope-check`.
+
+A good pillar is one sentence, names a user outcome (not a feature), and is in tension with the others. "Be easy to use" and "Push notifications" are not pillars.
+
+---
+
+## Step 7 — Analytics and crash reporting (optional until launch prep)
+
+The typed event layer in [`lib/core/analytics/`](lib/core/analytics/) works now: in debug builds events print to the console. To send them somewhere:
 
 ```bash
-./scripts/pick-design-system.sh notion-github       # or linear-minimal / warm-playful
+flutter pub add posthog_flutter sentry_flutter
 ```
 
-The script:
-1. Copies the chosen `tokens.dart` → `lib/core/design/tokens.dart`
-2. Copies the chosen `theme.dart` → `lib/core/design/theme.dart`
-3. Copies the chosen `DESIGN.md` → `docs/DESIGN.md`
-4. Removes the `design-systems/` folder (the final project carries only its chosen system)
-
-After running:
-- Wire `buildTheme(Brightness)` from `lib/core/design/theme.dart` into `MaterialApp.router` (already done in the Step 6 snippet below).
-- Configure `google_fonts` for the system's typography (Inter / Nunito / JetBrains Mono).
-- Review `docs/DESIGN.md` and tweak colors/values for your brand if needed.
-
-**Switching later is expensive.** If you've built >3 screens and want to change, expect a 1–2 day swap. Pick deliberately the first time.
+Set `POSTHOG_KEY` and `SENTRY_DSN` in `.env`, uncomment the PostHog lines in `lib/core/analytics/client.dart`, and initialize both in `lib/core/bootstrap.dart`. Write your North-Star Metric into `docs/TRACKING-PLAN.md` first — no event is added before the NSM is defined.
 
 ---
 
-## Step 4 — Define your pillars in `docs/PRD.md`
-
-Open `docs/PRD.md` and replace the pillar placeholders with 2–4 *actual* pillars for your product. **This is the most important step.** Every future feature will be scored against these pillars by `/spec` (strategist hat) and `/scope-check`. If the pillars are vague, the gatekeeping is vague.
-
-A good pillar:
-- Is one sentence.
-- Names a user outcome, not a feature.
-- Is in tension with the others (so you have to choose).
-
-A bad pillar:
-- "Be easy to use." (Every app says this.)
-- "Push notifications." (That's a feature, not an outcome.)
-
----
-
-## Step 5 — Set up Firebase (Auth only)
-
-1. Create a Firebase project at https://console.firebase.google.com
-2. Enable **Authentication** (start with Anonymous; add Email/Password and OAuth later). Avoid SMS/phone sign-in — it is billed per message and is the largest cost line at scale.
-3. Do **not** create a Firestore database or enable Functions/Storage — this stack does not use them.
-4. Install the FlutterFire CLI and configure your app — this generates `lib/firebase_options.dart` for every platform:
-
-```bash
-dart pub global activate flutterfire_cli
-flutterfire configure --project=<your-firebase-project-id>
-```
-
-`lib/firebase_options.dart` is **committed**. It contains the public web API key, but it is not a secret — security comes from the Worker verifying the Firebase ID token on every request.
-
-5. Put the Firebase project id into `rust/api/wrangler.toml` → `[vars] FIREBASE_PROJECT_ID`. The Worker rejects every request until it is set.
-
-6. Copy non-secret runtime config into `.env`:
-
-```bash
-cp .env.example .env
-# Edit .env with API_BASE_URL (Step 7), POSTHOG_KEY, SENTRY_DSN, etc.
-```
-
----
-
-## Step 5.5 — Integrate the Rust bridge
-
-The template ships `rust/shared/` and one source file for the app-side crate (`rust/core/src/api/feedback.rs`). The crate around it is created by flutter_rust_bridge:
-
-```bash
-# Rust targets for mobile + the Worker
-rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios \
-  aarch64-linux-android armv7-linux-androideabi x86_64-linux-android wasm32-unknown-unknown
-
-cargo install flutter_rust_bridge_codegen
-
-# From the project root. Creates the Rust crate, rust_builder/, and
-# flutter_rust_bridge.yaml, and adds the Dart dependency.
-flutter_rust_bridge_codegen integrate --rust-crate-dir rust/core
-```
-
-If your codegen version has no `--rust-crate-dir` flag (check `flutter_rust_bridge_codegen integrate --help`): move `rust/core/src/api/feedback.rs` aside, run plain `integrate`, move the generated crate from `rust/` to `rust/core/` without overwriting `rust/Cargo.toml`, `rust/shared/` or `rust/api/`, put `feedback.rs` back, and set `rust_root: rust/core/` in `flutter_rust_bridge.yaml`.
-
-Then wire the shipped code into the generated crate:
-
-1. `rust/core/Cargo.toml` → add under `[dependencies]`:
-   ```toml
-   shared = { path = "../shared" }
-   serde_json = "1"
-   ```
-2. `rust/core/src/api/mod.rs` → add `pub mod feedback;` (you can delete the generated `simple.rs` and its `pub mod simple;`).
-3. Generate the Dart bindings and run the Rust tests:
-   ```bash
-   flutter_rust_bridge_codegen generate
-   (cd rust && cargo test)          # shared validation rules
-   (cd rust/core && cargo test)     # payload builders
-   ```
-
-`lib/src/rust/` now contains `api/feedback.dart` with `buildFeedbackPayload(...)`, which `lib/features/feedback/feedback_provider.dart` already calls.
-
----
-
-## Step 6 — Replace `lib/main.dart`
-
-`flutter create` writes a counter-demo `lib/main.dart`. Replace it with the bootstrap below, which wires the Rust library, Firebase, dotenv, PostHog, Sentry, ProviderScope, and `MaterialApp.router`:
-
-```dart
-// lib/main.dart
-import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:posthog_flutter/posthog_flutter.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
-
-import 'package:{{project_name}}/app.dart';
-import 'package:{{project_name}}/firebase_options.dart';
-import 'package:{{project_name}}/src/rust/frb_generated.dart';
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await RustLib.init(); // loads the compiled rust/core library
-  await dotenv.load();
-
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  // PostHog (Step 6.5 wires the rest in lib/core/analytics/client.dart)
-  final posthogKey = dotenv.env['POSTHOG_KEY'];
-  if (posthogKey != null && posthogKey.isNotEmpty) {
-    final config = PostHogConfig(posthogKey)
-      ..host = dotenv.env['POSTHOG_HOST'] ?? 'https://us.i.posthog.com'
-      ..captureApplicationLifecycleEvents = true;
-    await Posthog().setup(config);
-  }
-
-  final sentryDsn = dotenv.env['SENTRY_DSN'];
-  await SentryFlutter.init(
-    (options) {
-      options.dsn = sentryDsn ?? '';
-      options.tracesSampleRate = 0.2;
-    },
-    appRunner: () => runApp(const ProviderScope(child: App())),
-  );
-}
-```
-
-The backend client is already in the template (`lib/core/api/api_client.dart`) — nothing to copy. Scaffold your first data slice with `/d1`:
-
-```bash
-# Inside Claude Code in the project dir
-/d1 profiles display_name:string handle:string
-```
-
-This writes the D1 migration, the `rust/shared` model + validation + tests, the Worker routes, and the `rust/core` payload builder, following the feedback reference slice.
-
----
-
-## Step 6.5 — Wire the analytics provider
-
-The template ships an analytics layer at [`lib/core/analytics/`](lib/core/analytics/) but the PostHog wiring is commented out by default. Open `lib/core/analytics/client.dart` and uncomment the PostHog lines — the wrapper signatures (`track`, `identify`, `reset`) don't change, only the bodies.
-
-Default recommendation: **PostHog** (free tier ~1M events/month, covers MVP).
-
-Create the PostHog project at https://posthog.com → grab the project API key → set it in `.env`:
-
-```
-POSTHOG_KEY=<your_key>
-POSTHOG_HOST=https://us.i.posthog.com
-SENTRY_DSN=<your_sentry_dsn>
-```
-
-Then write your North-Star Metric into `docs/TRACKING-PLAN.md` § NSM before adding any events. **No event gets added until the NSM is defined.**
-
-Crash reporting via Sentry is wired separately in `main.dart` (Step 6) — analytics + crashes are different concerns.
-
----
-
-## Step 7 — Run and deploy the API (Worker + D1)
-
-All commands from `rust/api/`.
+## Step 8 — Deploy the API
 
 ```bash
 cd rust/api
 npx wrangler login
-
-# Create the database, then paste the printed id into wrangler.toml → database_id
-npx wrangler d1 create <project-slug>
-
-# Local: apply migrations to a local D1 and start the Worker on :8787
-npx wrangler d1 migrations apply DB --local
-npx wrangler dev
-```
-
-Smoke-test locally (second terminal):
-
-```bash
-curl http://localhost:8787/health                                  # → ok
-curl -i -X POST http://localhost:8787/v1/feedback -d '{}'          # → 401 (no token)
-```
-
-Set `API_BASE_URL=http://localhost:8787` in `.env` (Android emulator: `http://10.0.2.2:8787`), run the app, submit feedback, then check the row:
-
-```bash
-npx wrangler d1 execute DB --local --command "SELECT * FROM feedback"
-```
-
-Deploy:
-
-```bash
+npx wrangler d1 create <database_name>      # paste the printed id into wrangler.toml → database_id
 npx wrangler d1 migrations apply DB --remote
-npx wrangler deploy          # prints the workers.dev URL → use it as API_BASE_URL for release builds
+npx wrangler deploy                         # prints the https URL
 ```
+
+Use that URL as `API_BASE_URL` in the `.env` you build releases with. Release checklist: `docs/RELEASE.md`. Before real traffic, read "Known gaps" in `docs/SECURITY.md` (no rate limiting yet).
 
 ---
 
-## Step 8 — Write your first PRD entry
-
-```bash
-# Inside Claude Code
-/spec sign-in — Email/password auth with anonymous-account linking
-```
-
-`/spec` (strategist hat) will write the entry under the matching pillar. Iterate until you're happy.
-
----
-
-## Step 9 — Run the development loop
-
-The workflow is strict and the slash commands enforce it:
+## Step 9 — The development loop
 
 ```
 /spec    →  /design   →  /build   →  /test   →  /release
 ```
 
-Each command runs in the main loop as a role "hat" (except `/test`, which spawns the `qa-engineer` sub-agent). Each phase's output is the next phase's input. **Don't skip.**
+Each command runs in the main loop as a role "hat" (except `/test`, which spawns the `qa-engineer` sub-agent). Each phase's output is the next phase's input. **Don't skip.** Not sure where to pick up: `/next`.
 
-When you're not sure where to pick up:
+First real feature: `/spec <feature>`, then `/d1 <table> <field:type> ...` scaffolds the data slice (migration, shared Rust model + validation, Worker route, app payload builder).
 
-```bash
-/next        # one-line recommendation
-git status   # what's in the working tree
-```
+**What to re-run after which change**
 
-Run codegen in a watcher during dev:
+| You changed | Run |
+|---|---|
+| `rust/shared/` or `rust/api/` | `(cd rust && cargo test)`; `wrangler dev` rebuilds on save |
+| `rust/core/src/api/` (anything Dart calls) | `flutter_rust_bridge_codegen generate`, `(cd rust/core && cargo test)`, then **full restart** of the app |
+| A `@riverpod` / freezed / typed-route file | `dart run build_runner build --delete-conflicting-outputs` (or `watch -d` while developing) |
+| A file in `rust/api/migrations/` | `npx wrangler d1 migrations apply DB --local` |
 
-```bash
-dart run build_runner watch -d
-```
-
----
-
-## Step 10 — Configure git
-
-```bash
-git init
-git add .
-git commit -m "Initial scaffolding from project template"
-```
-
-Add a remote when you have one.
+Generated files (`*.g.dart`, `lib/src/rust/`, `rust/core/src/frb_generated.rs`) are committed so a clone runs without codegen. Regenerate them; never edit them by hand.
 
 ---
 
-## What's intentionally NOT in this template
+## Troubleshooting
 
-- **`pubspec.yaml`** — generated by `flutter create` in Step 2.
-- **`android/`, `ios/`, `web/` folders** — generated by `flutter create`. You edit them per project (bundle ID, signing, icons).
-- **`lib/main.dart`** — `flutter create` writes a demo; you replace it with the Step 6 snippet.
-- **`lib/firebase_options.dart`** — generated by `flutterfire configure` in Step 5. Committed once generated.
-- **`rust/core/Cargo.toml`, `rust/core/src/lib.rs`, `rust_builder/`, `lib/src/rust/`** — created by flutter_rust_bridge in Step 5.5. Only `rust/core/src/api/feedback.rs` ships with the template.
-- **`lib/core/design/tokens.dart` + `theme.dart`** — picked from the design-system family in Step 3.5, not pre-included.
-- **`lib/core/analytics/client.dart` provider body** — PostHog wiring stays commented until you supply the key in Step 6.5.
-- **R2 file uploads, realtime (Durable Objects), offline cache, queues** — not scaffolded. Add when a PRD feature needs one.
-- **Rust steps in `codemagic.yaml`** — CI does not build the Rust crate yet; see the note at the top of that file.
-
-This keeps the template small and avoids stale boilerplate. The Claude config + docs are the durable parts; the code scaffolding stays specific to each project.
+- **iOS: `Binary ... Flutter.framework/Flutter does not contain architectures "arm64 x86_64"`** — seen with Flutter 3.44 + Xcode 27 when running `flutter build ios --simulator`. Use `flutter run -d <simulator-id>` (builds one architecture) or upgrade Flutter.
+- **iOS: deployment target error mentioning 13.0** — the project and `ios/Podfile` are set to 15.0; run `cd ios && pod install` if Pods are stale.
+- **"Rust bridge: not loaded" or a content-hash panic at start** — bindings are stale: `flutter_rust_bridge_codegen generate`, then `flutter clean && flutter run`.
+- **Build fails with "No file or variants found for asset: .env"** — `cp .env.example .env`.
+- **API unreachable on Android emulator** — `localhost` is the emulator itself; use `http://10.0.2.2:8787`.
+- **API unreachable on a physical phone** — use your computer's LAN IP and run `npx wrangler dev --ip 0.0.0.0`.
+- **401 "Server misconfigured: FIREBASE_PROJECT_ID is not set"** — Step 3.5.
+- **401 "Invalid or expired token" after Step 3** — `FIREBASE_PROJECT_ID` does not match the project in `lib/firebase_options.dart`.
 
 ---
 
-## Token-saving setup verification
+## What was and was not verified
 
-Before you start serious work, verify the token discipline is in place:
+Verified (2026-11-12, Flutter 3.44.6, Xcode 27.2, cargo 1.100, flutter_rust_bridge 2.13, wrangler 4.161): Steps 1–2 on an iOS simulator — app builds with the Rust library, bridge loads, API health check passes, Rust validation message reaches the UI; all test suites pass; the Worker accepts a correctly signed token and rejects forged ones (tested with a local signing key).
 
-1. Open Claude Code in the project dir.
-2. Type `/help` — you should see all slash commands listed.
-3. Type `/scope-check coffee tracker` — should return a 3-line verdict.
-
-If both work, the template is wired correctly.
+**Not verified:** Step 3 with a real Firebase project (so the signed-in round trip from the app, and verification against Google's live keys), any Android build, a physical device, `wrangler deploy`, and the Codemagic workflows (they do not build the Rust crate yet — see the note in `codemagic.yaml`). Update this section after your first full setup.

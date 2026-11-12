@@ -9,8 +9,9 @@
 # What it does:
 #   1. Copies <stack>/ into <target-dir> (git-tracked files only — no gitignored
 #      local cruft like .claude/settings.local.json or .env leaks through).
-#   2. Initializes a fresh git repo on `main` in the target.
-#   3. Prints next steps (follow the target's SETUP.md from Step 2).
+#   2. Creates `.env` from `.env.example` if the stack has one.
+#   3. Initializes a fresh git repo on `main` in the target.
+#   4. Prints next steps (follow the target's SETUP.md from Step 2).
 
 set -euo pipefail
 
@@ -69,6 +70,13 @@ else
 fi
 
 cd "$TARGET"
+
+# .env is gitignored, so it never comes along with the copy. Stacks that bundle
+# it as an app asset (flutter-rust) will not build without it.
+if [[ -f .env.example && ! -f .env ]]; then
+  cp .env.example .env
+fi
+
 git init -b main >/dev/null
 
 echo ""

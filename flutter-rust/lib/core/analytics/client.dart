@@ -7,9 +7,8 @@
 /// Provider currently: NONE (skeleton). Wire one in — see README.md.
 library;
 
+import 'package:app/core/analytics/events.dart';
 import 'package:flutter/foundation.dart';
-
-import 'events.dart';
 
 // ─── Provider wiring (pick one, uncomment) ───────────────────────────────────
 //

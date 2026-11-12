@@ -8,7 +8,7 @@ This repo holds **multiple project templates**, one subdirectory per stack. Each
 |---|---|---|
 | [`react-native/`](react-native/) | React Native (Expo) + Firebase | JS ecosystem, EAS Build, Zustand + TanStack Query, NativeWind |
 | [`flutter/`](flutter/) | Flutter + Firebase | Dart strict typing, Material 3, Riverpod, go_router, Codemagic |
-| [`flutter-rust/`](flutter-rust/) | Flutter + Rust + Cloudflare (Workers, D1, R2); Firebase Auth/FCM only | Lowest run cost and footprint; shared Rust validation on app and API; no offline sync/realtime by default. Backend verified locally, bridge integration not yet — see its README status note |
+| [`flutter-rust/`](flutter-rust/) | Flutter + Rust + Cloudflare (Workers, D1, R2); Firebase Auth/FCM only | Lowest run cost and footprint; shared Rust validation on app and API; no offline sync/realtime by default. Unlike the other two, it is a complete runnable app, not an overlay — see its README status note |
 
 All share the same workflow shape (`/idea → /spec → /design → /build → /test → /release → /launch`), the same 3 swappable design systems (`notion-github`, `linear-minimal`, `warm-playful`), and the same standing rules (MVP-first, UX priority, QA gate, analytics-first, token discipline).
 

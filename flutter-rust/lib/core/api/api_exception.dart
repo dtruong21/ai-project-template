@@ -5,6 +5,8 @@
 /// the error state. No silent swallowing.
 library;
 
+import 'package:app/core/api/api_client.dart' show ApiClient;
+
 sealed class ApiException implements Exception {
   const ApiException(this.path);
 

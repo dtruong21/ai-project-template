@@ -1,59 +1,52 @@
 ---
-description: Scaffold a Riverpod AsyncNotifier provider over a repository
-argument-hint: <provider name> <collection> [single | list]
+description: Scaffold a Riverpod AsyncNotifier provider over the Worker API
+argument-hint: <provider name> <table> [mutation | list]
 ---
 
 Scaffold a Riverpod provider for: $ARGUMENTS
 
-Create the file at `lib/features/<feature>/application/<name>_provider.dart`. Use `@riverpod` codegen — never raw `FutureProvider` or `StateNotifier`.
+Reference: `lib/features/feedback/feedback_provider.dart`. Create `lib/features/<feature>/application/<name>_provider.dart` with `@riverpod` codegen — never raw `FutureProvider` or `StateNotifier`.
 
-### Single doc pattern
+### Mutation pattern (create / update / submit)
 ```dart
 @riverpod
-class <Name>Notifier extends _$<Name>Notifier {
+class <Name> extends _$<Name> {
   @override
-  Future<<Model>?> build(String id) async {
-    return ref.watch(<collection>RepositoryProvider).get<Model>(id);
-  }
+  AsyncValue<void> build() => const AsyncValue.data(null);
 
-  Future<void> update(Map<String, Object?> patch) async {
-    final repo = ref.read(<collection>RepositoryProvider);  // read, not watch, after build()
-    state = const AsyncLoading();
+  Future<void> submit(<Input> input) async {
+    state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      await repo.update<Model>(state.value!.id, patch);
-      return repo.get<Model>(state.value!.id);
+      final payload = build<Table>Payload(/* fields */);  // Rust: same rules as the Worker
+      await ref.read(apiClientProvider).postJson('/v1/<table>', payload);
     });
   }
 }
 ```
 
 ### List pattern
+No realtime listeners exist: `build()` fetches once, mutations call `ref.invalidateSelf()`.
 ```dart
 @riverpod
-class <Name>ListNotifier extends _$<Name>ListNotifier {
+class <Name>List extends _$<Name>List {
   @override
-  Stream<List<<Model>>> build() {
-    return ref.watch(<collection>RepositoryProvider).list<Model>s();
+  Future<List<<Model>>> build() async {
+    final body = await ref.watch(apiClientProvider).getJson('/v1/<table>');
+    return <Model>.listFromJson(body);  // freezed + json_serializable, no hand parsing
   }
 
-  Future<void> create(<Model> data) async {
-    final repo = ref.read(<collection>RepositoryProvider);
-    await repo.create<Model>(data);
-    // stream-backed: no manual invalidate needed
-  }
-
-  Future<void> delete(String id) async {
-    final repo = ref.read(<collection>RepositoryProvider);
-    await repo.delete<Model>(id);
+  Future<void> create(<Input> input) async {
+    await ref.read(apiClientProvider).postJson('/v1/<table>', build<Table>Payload(/* fields */));
+    ref.invalidateSelf();
   }
 }
 ```
+`ApiClient` only has `postJson` today. If the list pattern needs `getJson`, add it next to `postJson` in `lib/core/api/api_client.dart` with the same auth header and error mapping — never a second HTTP path.
 
 Constraints:
-- Read/write through `ref.read(apiClientProvider)` from `lib/core/api/api_client.dart`, with request bodies built by the generated Rust functions in `lib/src/rust/api/`. NEVER import `package:http` here.
-- `ref.watch` only inside `build()`. After `build()`, use `ref.read` — this is rule #1 in the master spec.
-- Errors propagate naturally through `AsyncValue.error`. Don't catch and swallow.
-- Mutations use `AsyncValue.guard` to land errors back in `state` cleanly.
-- Add `part '<name>_provider.g.dart';` for the `@riverpod` generator. Run `dart run build_runner build --delete-conflicting-outputs`.
+- Backend only via `ref.read(apiClientProvider)`; request bodies come from the generated Rust functions in `lib/src/rust/api/`. NEVER import `package:http` here, never validate in Dart.
+- `ref.watch` only inside `build()`. After `build()`, use `ref.read` — rule #1 in the master spec.
+- Errors propagate through `AsyncValue.error` (`ApiException` subtypes). Don't catch and swallow.
+- Add `part '<name>_provider.g.dart';` and run `dart run build_runner build --delete-conflicting-outputs`.
 
 Output: the file diff only.

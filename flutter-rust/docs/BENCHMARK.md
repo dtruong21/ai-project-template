@@ -56,6 +56,17 @@ Worker CPU time per request: Cloudflare dashboard → Workers → your Worker �
 
 After a week of real traffic: Cloudflare dashboard → Billing → usage (Workers requests, D1 rows read/written, R2 storage/operations). Compare with the same week's Firebase bill grouped by SKU (Google Cloud console → Billing → Reports). Watch D1 **rows read** — an unindexed query shows up there first.
 
+## 7. Desktop and web size
+
+```bash
+flutter build macos --release && du -sh build/macos/Build/Products/Release/*.app
+flutter build windows --release        # on Windows: size of build/windows/x64/runner/Release
+flutter_rust_bridge_codegen build-web && flutter build web --release
+du -sh build/web && ls -l build/web/pkg/*.wasm   # transfer size: check the Network tab, gzip/brotli on
+```
+
+Web first load is the number that matters most: the Flutter engine plus the Rust wasm both download before the app starts. Record the wasm size and time-to-interactive on a throttled connection.
+
 ## Results
 
 | Metric | flutter (Firebase) | flutter-rust | Date / device |
@@ -63,6 +74,8 @@ After a week of real traffic: Cloudflare dashboard → Billing → usage (Worker
 | APK size (arm64) | | | |
 | Memory after cold start (PSS) | | | |
 | Cold start (TotalTime) | | | |
+| macOS .app size | | | |
+| Web: Rust wasm size / first load | | | |
 | Feedback submit p50 / p95 | | | |
 | Monthly run cost at current MAU | | | |
 

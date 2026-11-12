@@ -51,6 +51,17 @@ Failure modes that bite mobile + Firebase apps regardless of feature:
 - [ ] Slow network throttle (Network Link Conditioner / Android emulator throttle) doesn't break UI.
 - [ ] Cold offline launch shows the offline state with retry — never a blank screen or infinite spinner. (No local cache by default; add one only if a pillar needs offline reads.)
 
+### Desktop + web (macOS, Windows, browser)
+
+- [ ] Resize the window from phone width to ultrawide — no overflow, no unreadable line lengths.
+- [ ] Keyboard only: Tab order is sane, Enter submits forms, Esc closes dialogs, focus ring visible.
+- [ ] Mouse hover and right-click do not break gestures designed for touch.
+- [ ] macOS: API calls work in the Release build (`com.apple.security.network.client` entitlement present).
+- [ ] Web: page loads with the real host's COOP/COEP headers — Rust (wasm) initializes, `crossOriginIsolated` is true.
+- [ ] Web: browser refresh and Back/Forward keep the route and do not lose signed-in state.
+- [ ] Web: first load over a throttled connection shows a loading state, not a blank page.
+- [ ] Web: an API call from the deployed origin passes CORS (preflight answered).
+
 ### Auth
 
 - [ ] Anonymous → real-account linking preserves uid + data.

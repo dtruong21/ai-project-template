@@ -1,10 +1,10 @@
 # Project Template — Flutter + Rust + Cloudflare
 
-A starting point for solo-built mobile MVPs. Ships the Claude Code config, docs scaffolding, and a strict development workflow optimized for **token efficiency** and **QA quality**.
+A starting point for solo-built MVPs on iOS, Android, web, macOS and Windows. Ships the Claude Code config, docs scaffolding, and a strict development workflow optimized for **token efficiency** and **QA quality**.
 
 **Stack:** Flutter UI + Rust logic (flutter_rust_bridge) + Rust API on Cloudflare Workers + D1 + R2. Firebase kept for Auth and push only. Riverpod (AsyncNotifier) + go_router + freezed + Material 3.
 
-> **Status (2026-11-12): backend verified locally, app integration not yet.** Verified with cargo 1.100, worker 0.9, jsonwebtoken 11, flutter_rust_bridge 2.13, wrangler 4.161: `rust/shared` and `rust/core` tests pass; `rust/api` builds to wasm (~865 KB) and, run under `wrangler dev` with a local D1, accepts a correctly signed token and rejects missing, malformed, expired, wrong-audience, wrong-issuer and tampered ones. **Not verified:** SETUP Step 5.5 (`flutter_rust_bridge_codegen integrate` on a real Flutter project), the Flutter app building and calling the API, token verification against Google's live keys, and `wrangler deploy`. Update this note after your first full setup.
+> **Status (2026-11-12): backend verified locally, app integration not yet.** Verified with cargo 1.100, worker 0.9, jsonwebtoken 11, flutter_rust_bridge 2.13, wrangler 4.161: `rust/shared` and `rust/core` tests pass; `rust/api` builds to wasm (~865 KB) and, run under `wrangler dev` with a local D1, accepts a correctly signed token and rejects missing, malformed, expired, wrong-audience, wrong-issuer and tampered ones. **Platforms:** iOS, Android, web, macOS, Windows are wired in SETUP, `codemagic.yaml` and the docs, but none of the desktop or web steps have been run — this Mac had no Rust toolchain. Known gaps: the Worker has no CORS handling (web needs it), web hosting must send COOP/COEP headers, `firebase_auth` is beta on macOS/Windows and `firebase_messaging` has no Windows support. Linux is out (no Firebase Auth). **Not verified:** SETUP Step 5.5 (`flutter_rust_bridge_codegen integrate` on a real Flutter project), the Flutter app building and calling the API, token verification against Google's live keys, and `wrangler deploy`. Update this note after your first full setup.
 
 ---
 

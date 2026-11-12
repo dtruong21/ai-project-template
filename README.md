@@ -9,7 +9,9 @@ A family of opinionated scaffolds for solo-built mobile MVPs. One GitHub repo, o
 | **React Native** (Expo + Firebase) | [`react-native/`](react-native/) | JavaScript ecosystem, EAS Build for cloud builds, Zustand + TanStack Query, NativeWind. Fast iteration. Largest community. |
 | **Flutter** (Flutter + Firebase) | [`flutter/`](flutter/) | Dart strict typing, native compiled UI, Material 3, Riverpod with codegen, go_router, Codemagic. Stronger correctness guarantees. |
 
-Both share the same workflow shape, design systems, and standing rules. Pick by language/runtime preference — process is identical.
+| **Flutter + Rust** (Flutter + Rust + Cloudflare) | [`flutter-rust/`](flutter-rust/) | Flutter UI, Rust logic shared between app and API, Cloudflare Workers + D1 + R2 backend, Firebase for Auth/push only. Lowest run cost; heavier toolchain. Backend verified locally; Flutter bridge integration not yet run end to end. |
+
+All share the same workflow shape, design systems, and standing rules. Pick `react-native` or `flutter` by language/runtime preference — process is identical. Pick `flutter-rust` when run cost and footprint matter more than time-to-first-build (no offline sync or realtime out of the box).
 
 ## Quick start (new project)
 
@@ -21,6 +23,8 @@ git clone https://github.com/dtruong21/ai-project-template.git ~/Documents/templ
 ~/Documents/templates/scripts/new-project.sh react-native ~/Documents/my-new-app
 # or
 ~/Documents/templates/scripts/new-project.sh flutter ~/Documents/my-new-app
+# or
+~/Documents/templates/scripts/new-project.sh flutter-rust ~/Documents/my-new-app
 
 # Then follow that project's SETUP.md
 cd ~/Documents/my-new-app

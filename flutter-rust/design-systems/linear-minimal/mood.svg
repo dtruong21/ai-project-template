@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+  <rect width="800" height="400" fill="#0a0a0a"/>
+
+  <!-- Title -->
+  <text x="40" y="68" font-family="Inter, system-ui, sans-serif" font-size="40" font-weight="700" fill="#fafafa" letter-spacing="-1">Linear · Minimal</text>
+  <text x="40" y="98" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="400" fill="#999999">Monochrome · sharp · crisp motion</text>
+
+  <!-- Palette -->
+  <g transform="translate(40, 140)">
+    <rect width="72" height="72" rx="6" fill="#0a0a0a" stroke="#2a2a2a"/>
+    <rect x="84" width="72" height="72" rx="6" fill="#141414" stroke="#2a2a2a"/>
+    <rect x="168" width="72" height="72" rx="6" fill="#fafafa"/>
+    <rect x="252" width="72" height="72" rx="6" fill="#8d95f2"/>
+    <text x="36" y="92" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#999999">bg</text>
+    <text x="120" y="92" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#999999">surface</text>
+    <text x="204" y="92" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#999999">text</text>
+    <text x="288" y="92" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="#999999">accent</text>
+  </g>
+
+  <!-- Buttons + keyboard hint -->
+  <g transform="translate(40, 260)">
+    <!-- Primary button (inverted) -->
+    <rect width="140" height="36" rx="6" fill="#fafafa"/>
+    <text x="70" y="23" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="500" fill="#0a0a0a">New issue</text>
+
+    <!-- Accent button -->
+    <rect x="152" width="120" height="36" rx="6" fill="#5e6ad2"/>
+    <text x="212" y="23" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="14" font-weight="500" fill="#fafafa">Submit</text>
+
+    <!-- Keyboard hint chip -->
+    <rect x="290" y="6" width="28" height="24" rx="4" fill="#141414" stroke="#2a2a2a"/>
+    <text x="304" y="22" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" font-weight="500" fill="#fafafa">⌘K</text>
+  </g>
+
+  <!-- List row preview -->
+  <g transform="translate(440, 140)">
+    <rect width="320" height="200" rx="8" fill="#141414" stroke="#2a2a2a"/>
+
+    <text x="20" y="32" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#666666">INBOX · 3</text>
+
+    <!-- row 1 -->
+    <text x="20" y="68" font-family="Inter, system-ui, sans-serif" font-size="15" fill="#fafafa">Refactor auth flow</text>
+    <text x="300" y="68" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="13" fill="#999999">ENG-142</text>
+    <line x1="20" y1="86" x2="300" y2="86" stroke="#1f1f1f"/>
+
+    <!-- row 2 -->
+    <text x="20" y="118" font-family="Inter, system-ui, sans-serif" font-size="15" fill="#fafafa">Ship dark mode parity</text>
+    <text x="300" y="118" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="13" fill="#999999">DSN-088</text>
+    <line x1="20" y1="136" x2="300" y2="136" stroke="#1f1f1f"/>
+
+    <!-- row 3 -->
+    <text x="20" y="168" font-family="Inter, system-ui, sans-serif" font-size="15" fill="#fafafa">Verify API auth checks</text>
+    <text x="300" y="168" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="13" fill="#999999">QA-027</text>
+  </g>
+
+  <!-- Footer -->
+  <text x="40" y="380" font-family="Inter, system-ui, sans-serif" font-size="13" fill="#666666">Best for SaaS tools · developer apps · serious products</text>
+</svg>

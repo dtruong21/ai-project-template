@@ -1,0 +1,22 @@
+# Workspace for the backend side: `shared` (models + validation) and `api`
+# (Cloudflare Worker).
+#
+# `core/` is the app-side crate built by flutter_rust_bridge. It is excluded
+# on purpose: it is created by `flutter_rust_bridge_codegen integrate` during
+# setup, targets mobile instead of wasm, and keeps its own lockfile.
+[workspace]
+resolver = "2"
+members = ["shared", "api"]
+exclude = ["core"]
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Size matters more than speed on Workers (bundle limit, cold start).
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+# No `strip = true`: wasm-bindgen needs the target_features section, and
+# worker-build's wasm-opt pass strips the binary anyway.

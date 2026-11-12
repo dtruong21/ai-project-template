@@ -1,0 +1,19 @@
+[package]
+name = "api"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+shared = { path = "../shared" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+worker = { version = "0.9", features = ["d1"] }
+# `rust_crypto` = pure-Rust RSA, so it builds for wasm without a C toolchain.
+jsonwebtoken = { version = "11", default-features = false, features = ["rust_crypto"] }
+# jsonwebtoken's crypto pulls in getrandom 0.2, which refuses to build for
+# wasm32-unknown-unknown without `js` (random bytes come from Web Crypto).
+getrandom = { version = "0.2", features = ["js"] }

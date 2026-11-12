@@ -10,7 +10,7 @@ The Flutter template lives in the `flutter/` subdir of the multi-stack templates
 
 ```bash
 # Once: clone the templates repo somewhere you can find it
-git clone https://gitea.com/daki.tle.26/ai-project-template.git ~/Documents/templates
+git clone https://github.com/dtruong21/ai-project-template.git ~/Documents/templates
 
 # Each new project: one command
 ~/Documents/templates/scripts/new-project.sh flutter ~/Documents/my-new-app

@@ -1,0 +1,171 @@
+# Codemagic CI/CD for the Flutter template.
+#
+# Three workflows: ios_release, android_release, web_release.
+# Each runs: pub get → codegen → tests → build → publish.
+#
+# Before your first build, wire credentials in Codemagic UI:
+#   - Teams → Integrations → App Store Connect API key  (name it: app_store_connect)
+#       https://docs.codemagic.io/yaml-publishing/app-store-connect/
+#   - Teams → Integrations → Google Play  (upload service-account JSON; name it: google_play)
+#       https://docs.codemagic.io/yaml-publishing/google-play/
+#   - App settings → Environment variables (encrypted):
+#       FIREBASE_OPTIONS_DART      — contents of lib/firebase_options.dart (if you'd rather not commit)
+#       SENTRY_AUTH_TOKEN          — for upload-sourcemaps step (optional)
+#
+# RUST: this stack builds a Rust crate (rust/core) into the app. Each workflow
+# needs, before `flutter build`: the Rust toolchain with mobile targets
+# (rustup target add aarch64-apple-ios aarch64-linux-android ...), and
+# `cargo install flutter_rust_bridge_codegen && flutter_rust_bridge_codegen generate`
+# unless you commit lib/src/rust/. Not wired below yet — add when you set up CI.
+# The Worker (rust/api) is deployed with `wrangler deploy`, not by Codemagic.
+#
+# Gotcha (master spec §5): Codemagic caches the Flutter SDK aggressively.
+# BUMP `cache.cache_paths` / the Flutter version key whenever you change
+# the Flutter pin in `.fvmrc`, or you'll get a stale-toolchain build.
+
+definitions:
+  instance_types:
+    mac: &mac mac_mini_m2
+    linux: &linux linux_x2
+
+  flutter: &flutter_version stable  # Override per-workflow if you want to pin to .fvmrc value.
+
+  cache_paths: &cache_paths
+    - $HOME/.pub-cache
+    - $HOME/Library/Caches/CocoaPods
+    - $FLUTTER_ROOT/.pub-cache
+
+  scripts:
+    - &get_packages
+      name: Flutter pub get
+      script: |
+        flutter --version
+        flutter pub get
+
+    - &run_codegen
+      name: Run build_runner (freezed / riverpod / go_router_builder)
+      script: |
+        dart run build_runner build --delete-conflicting-outputs
+
+    - &run_analyzer
+      name: Static analysis
+      script: |
+        flutter analyze --fatal-infos --fatal-warnings
+
+    - &run_tests
+      name: Flutter unit + widget tests
+      script: |
+        flutter test --coverage --reporter=expanded
+
+workflows:
+  # ─────────────────────────────────────────────────────────────────────
+  # iOS — App Store / TestFlight
+  # ─────────────────────────────────────────────────────────────────────
+  ios_release:
+    name: iOS release
+    instance_type: *mac
+    max_build_duration: 60
+    environment:
+      flutter: *flutter_version
+      xcode: latest
+      cocoapods: default
+      ios_signing:
+        # Configure these in: App settings → Code signing identities → iOS.
+        distribution_type: app_store
+        bundle_identifier: com.example.app  # ← replace with your bundle id
+      groups:
+        - app_store_connect  # ← App Store Connect API key group (see top of file)
+      vars:
+        APP_STORE_APPLE_ID: ""  # numeric Apple ID from App Store Connect
+    cache:
+      cache_paths: *cache_paths
+    scripts:
+      - *get_packages
+      - *run_codegen
+      - *run_analyzer
+      - *run_tests
+      - name: Set up keychain & provisioning profiles
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files "$BUNDLE_IDENTIFIER" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Build iOS .ipa
+        script: |
+          flutter build ipa --release \
+            --export-options-plist=/Users/builder/export_options.plist
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - flutter_drive.log
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        # submit_to_app_store: false   # flip to true for production submission
+        # beta_groups:
+        #   - Internal QA
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Android — Google Play
+  # ─────────────────────────────────────────────────────────────────────
+  android_release:
+    name: Android release
+    instance_type: *linux
+    max_build_duration: 60
+    environment:
+      flutter: *flutter_version
+      java: 17
+      android_signing:
+        - keystore_reference  # ← reference uploaded in App settings → Code signing identities → Android
+      groups:
+        - google_play  # ← Play upload service-account JSON (see top of file)
+    cache:
+      cache_paths: *cache_paths
+    scripts:
+      - *get_packages
+      - *run_codegen
+      - *run_analyzer
+      - *run_tests
+      - name: Build .aab
+        script: |
+          flutter build appbundle --release
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
+      - build/app/outputs/mapping/release/mapping.txt
+    publishing:
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal   # internal → alpha → beta → production
+        submit_as_draft: false
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Web — optional, deploy to Firebase Hosting
+  # ─────────────────────────────────────────────────────────────────────
+  web_release:
+    name: Web release
+    instance_type: *linux
+    max_build_duration: 30
+    environment:
+      flutter: *flutter_version
+      groups:
+        # - firebase_hosting  # ← create this group with FIREBASE_TOKEN if you deploy via CI
+    cache:
+      cache_paths: *cache_paths
+    scripts:
+      - *get_packages
+      - *run_codegen
+      - *run_analyzer
+      - *run_tests
+      - name: Build web
+        script: |
+          flutter build web --release --web-renderer canvaskit
+      # Uncomment when firebase_hosting group is wired:
+      # - name: Deploy to Firebase Hosting
+      #   script: |
+      #     npm install -g firebase-tools
+      #     firebase deploy --only hosting --token "$FIREBASE_TOKEN" --non-interactive
+    artifacts:
+      - build/web/**

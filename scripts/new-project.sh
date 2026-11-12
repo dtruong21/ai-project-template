@@ -4,6 +4,7 @@
 # Usage:
 #   ./scripts/new-project.sh react-native ~/Documents/my-new-app
 #   ./scripts/new-project.sh flutter      ~/Documents/my-new-app
+#   ./scripts/new-project.sh flutter-rust ~/Documents/my-new-app
 #
 # What it does:
 #   1. Copies <stack>/ into <target-dir> (git-tracked files only — no gitignored
@@ -15,7 +16,7 @@ set -euo pipefail
 
 STACK="${1:-}"
 TARGET="${2:-}"
-VALID=("react-native" "flutter")
+VALID=("react-native" "flutter" "flutter-rust")
 
 # ── Validate args ────────────────────────────────────────────────────────────
 
@@ -39,7 +40,7 @@ SRC="$REPO_ROOT/$STACK"
 
 if [[ ! -d "$SRC" ]]; then
   echo "Error: stack source not found at $SRC"
-  echo "Did you clone the template repo fully? Run: git clone https://gitea.com/daki.tle.26/ai-project-template.git"
+  echo "Did you clone the template repo fully? Run: git clone https://github.com/dtruong21/ai-project-template.git"
   exit 1
 fi
 

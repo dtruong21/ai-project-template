@@ -1,0 +1,28 @@
+# Cloudflare Worker config. Run wrangler from this directory (rust/api/).
+#
+#   npx wrangler dev                               local Worker + local D1
+#   npx wrangler d1 migrations apply DB --local    apply migrations/ locally
+#   npx wrangler d1 migrations apply DB --remote   apply to production
+#   npx wrangler deploy                            ship
+
+name = "{{PROJECT_SLUG}}-api"
+main = "build/worker/shim.mjs"
+compatibility_date = "2026-11-01"
+
+[build]
+command = "cargo install -q worker-build && worker-build --release"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "{{PROJECT_SLUG}}"
+# Paste the id printed by `npx wrangler d1 create {{PROJECT_SLUG}}`. Not a secret.
+database_id = "{{D1_DATABASE_ID}}"
+
+[vars]
+# Firebase Console → Project settings → Project ID. Not a secret.
+# Token verification rejects every request until this is set.
+FIREBASE_PROJECT_ID = "{{FIREBASE_PROJECT_ID}}"
+
+# Real secrets never go in this file:
+#   npx wrangler secret put <NAME>      (production)
+#   .dev.vars                           (local, gitignored)

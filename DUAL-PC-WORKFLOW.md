@@ -18,11 +18,11 @@ Two machines, two subscriptions, one pipeline. This doc is the standing split: w
 **PC A (build PC)**
 1. Full toolchain: Node + Expo / Flutter SDK, Android Studio or Xcode, Firebase CLI, EAS or Codemagic CLI.
 2. Claude Code signed into Pro.
-3. Clone the project repo(s) from Gitea.
+3. Clone the project repo(s) from GitHub.
 4. Real secrets (Firebase Admin service account, EAS/Codemagic keys, OAuth secrets) live **only here**. PC B never releases, so it never needs them.
 
 **PC B (support PC)**
-1. `git` + clone of the same repos from Gitea.
+1. `git` + clone of the same repos from GitHub.
 2. Codex CLI (`npm i -g @openai/codex`), signed in with the ChatGPT Go account.
 3. Browser ChatGPT for research and drafting.
 4. Optional: just enough toolchain to run the test suite (`npm test` / `flutter test`) so Codex can verify its own chores. No emulators, no store credentials.

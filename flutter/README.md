@@ -136,7 +136,7 @@ The template is the accumulated lesson. Update it.
 
 This template has a React Native sibling — same workflow, same main-loop "hats", same docs structure, different stack:
 
-- **React Native (Expo) version:** https://gitea.com/daki.tle.26/ai-project-template
+- **React Native (Expo) version:** https://github.com/dtruong21/ai-project-template
 
 Use the RN sibling for projects where rapid web parity, JS-ecosystem tooling, or existing React skills tip the trade-off. Use this Flutter template for projects where native UI fidelity, strict typing through the data layer (freezed), and Material 3 are the better fit.
 

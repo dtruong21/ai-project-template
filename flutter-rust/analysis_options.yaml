@@ -1,0 +1,59 @@
+# Strict Flutter lint configuration.
+# Base: very_good_analysis (Verily/VGV preset — the strictest mainstream baseline).
+# Layered on top: project-specific rules from the master spec.
+#
+# Custom-lint host is enabled so riverpod_lint contributes IDE assists.
+
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    # Promote noisy footguns to errors — fail the build, don't warn.
+    unused_import: error
+    dead_code: error
+    missing_return: error
+    # Async hygiene.
+    unawaited_futures: error
+    # Style we want to enforce hard.
+    always_use_package_imports: error
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/generated_plugin_registrant.dart"
+    - "build/**"
+    - ".dart_tool/**"
+  plugins:
+    - custom_lint
+
+linter:
+  rules:
+    # Imports — package: only, never relative across feature boundaries.
+    always_use_package_imports: true
+    avoid_relative_lib_imports: true
+
+    # Const correctness — Flutter perf 101.
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+
+    # Print discipline — use a logger, not stdout.
+    avoid_print: true
+
+    # Async hygiene.
+    unawaited_futures: true
+    discarded_futures: true
+
+    # Null-safety / boundary hygiene.
+    avoid_dynamic_calls: true
+    cancel_subscriptions: true
+    close_sinks: true
+
+    # Misc quality.
+    require_trailing_commas: true
+    use_super_parameters: true
+    sort_pub_dependencies: true

@@ -16,40 +16,45 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'tokens.dart';
 
+/// Common entry point — every design system exposes `buildTheme`, so
+/// `lib/app.dart` never changes when you switch systems.
+ThemeData buildTheme(Brightness brightness) => _buildTheme(brightness);
+
 ThemeData notionGithubLightTheme() => _buildTheme(Brightness.light);
 
 ThemeData notionGithubDarkTheme() => _buildTheme(Brightness.dark);
 
 ThemeData _buildTheme(Brightness brightness) {
-  final bool isDark = brightness == Brightness.dark;
-  final _LightOrDark c = isDark ? _LightOrDark.dark() : _LightOrDark.light();
+  final isDark = brightness == Brightness.dark;
+  final c = isDark ? _LightOrDark.dark() : _LightOrDark.light();
 
-  final ColorScheme scheme = ColorScheme.fromSeed(
-    seedColor: c.accent,
-    brightness: brightness,
-    dynamicSchemeVariant: DynamicSchemeVariant.neutral,
-  ).copyWith(
-    surface: c.surface,
-    onSurface: c.text,
-    surfaceContainerLowest: c.bg,
-    surfaceContainerLow: c.surface,
-    surfaceContainer: c.surface,
-    surfaceContainerHigh: c.surface,
-    surfaceContainerHighest: c.surface,
-    onSurfaceVariant: c.muted,
-    outline: c.border,
-    outlineVariant: c.divider,
-    primary: c.accent,
-    onPrimary: isDark ? c.bg : Colors.white,
-    error: c.danger,
-    onError: Colors.white,
-  );
+  final scheme =
+      ColorScheme.fromSeed(
+        seedColor: c.accent,
+        brightness: brightness,
+        dynamicSchemeVariant: DynamicSchemeVariant.neutral,
+      ).copyWith(
+        surface: c.surface,
+        onSurface: c.text,
+        surfaceContainerLowest: c.bg,
+        surfaceContainerLow: c.surface,
+        surfaceContainer: c.surface,
+        surfaceContainerHigh: c.surface,
+        surfaceContainerHighest: c.surface,
+        onSurfaceVariant: c.muted,
+        outline: c.border,
+        outlineVariant: c.divider,
+        primary: c.accent,
+        onPrimary: isDark ? c.bg : Colors.white,
+        error: c.danger,
+        onError: Colors.white,
+      );
 
-  final TextTheme baseText = GoogleFonts.interTextTheme(
+  final baseText = GoogleFonts.interTextTheme(
     ThemeData(brightness: brightness).textTheme,
   );
 
-  TextStyle _spec(
+  TextStyle spec(
     _TextSpec spec, {
     Color? color,
     String? family,
@@ -70,27 +75,27 @@ ThemeData _buildTheme(Brightness brightness) {
     );
   }
 
-  final _Typography t = NotionGithubTokens.typography;
+  const t = NotionGithubTokens.typography;
 
-  final TextTheme textTheme = baseText.copyWith(
+  final textTheme = baseText.copyWith(
     // Display / headlines — Notion-style page titles + section headers.
-    displayLarge: _spec(_TextSpec.from(t.display), color: c.text),
-    displayMedium: _spec(_TextSpec.from(t.display), color: c.text),
-    displaySmall: _spec(_TextSpec.from(t.h1), color: c.text),
-    headlineLarge: _spec(_TextSpec.from(t.h1), color: c.text),
-    headlineMedium: _spec(_TextSpec.from(t.h1), color: c.text),
-    headlineSmall: _spec(_TextSpec.from(t.h2), color: c.text),
-    titleLarge: _spec(_TextSpec.from(t.h2), color: c.text),
-    titleMedium: _spec(_TextSpec.from(t.body), color: c.text),
-    titleSmall: _spec(_TextSpec.from(t.caption), color: c.muted),
+    displayLarge: spec(_TextSpec.from(t.display), color: c.text),
+    displayMedium: spec(_TextSpec.from(t.display), color: c.text),
+    displaySmall: spec(_TextSpec.from(t.h1), color: c.text),
+    headlineLarge: spec(_TextSpec.from(t.h1), color: c.text),
+    headlineMedium: spec(_TextSpec.from(t.h1), color: c.text),
+    headlineSmall: spec(_TextSpec.from(t.h2), color: c.text),
+    titleLarge: spec(_TextSpec.from(t.h2), color: c.text),
+    titleMedium: spec(_TextSpec.from(t.body), color: c.text),
+    titleSmall: spec(_TextSpec.from(t.caption), color: c.muted),
     // Body — default reading text.
-    bodyLarge: _spec(_TextSpec.from(t.body), color: c.text),
-    bodyMedium: _spec(_TextSpec.from(t.body), color: c.text),
-    bodySmall: _spec(_TextSpec.from(t.caption), color: c.muted),
+    bodyLarge: spec(_TextSpec.from(t.body), color: c.text),
+    bodyMedium: spec(_TextSpec.from(t.body), color: c.text),
+    bodySmall: spec(_TextSpec.from(t.caption), color: c.muted),
     // Labels — buttons + small UI.
-    labelLarge: _spec(_TextSpec.from(t.body), color: c.text),
-    labelMedium: _spec(_TextSpec.from(t.caption), color: c.text),
-    labelSmall: _spec(_TextSpec.from(t.caption), color: c.muted),
+    labelLarge: spec(_TextSpec.from(t.body), color: c.text),
+    labelMedium: spec(_TextSpec.from(t.caption), color: c.text),
+    labelSmall: spec(_TextSpec.from(t.caption), color: c.muted),
   );
 
   return ThemeData(
@@ -344,34 +349,34 @@ class _LightOrDark {
   });
 
   factory _LightOrDark.light() => _LightOrDark._(
-        bg: NotionGithubTokens.light.bg,
-        surface: NotionGithubTokens.light.surface,
-        border: NotionGithubTokens.light.border,
-        divider: NotionGithubTokens.light.divider,
-        text: NotionGithubTokens.light.text,
-        muted: NotionGithubTokens.light.muted,
-        subtle: NotionGithubTokens.light.subtle,
-        accent: NotionGithubTokens.light.accent,
-        success: NotionGithubTokens.light.success,
-        danger: NotionGithubTokens.light.danger,
-        warning: NotionGithubTokens.light.warning,
-        heatmap: NotionGithubTokens.light.heatmap,
-      );
+    bg: NotionGithubTokens.light.bg,
+    surface: NotionGithubTokens.light.surface,
+    border: NotionGithubTokens.light.border,
+    divider: NotionGithubTokens.light.divider,
+    text: NotionGithubTokens.light.text,
+    muted: NotionGithubTokens.light.muted,
+    subtle: NotionGithubTokens.light.subtle,
+    accent: NotionGithubTokens.light.accent,
+    success: NotionGithubTokens.light.success,
+    danger: NotionGithubTokens.light.danger,
+    warning: NotionGithubTokens.light.warning,
+    heatmap: NotionGithubTokens.light.heatmap,
+  );
 
   factory _LightOrDark.dark() => _LightOrDark._(
-        bg: NotionGithubTokens.dark.bg,
-        surface: NotionGithubTokens.dark.surface,
-        border: NotionGithubTokens.dark.border,
-        divider: NotionGithubTokens.dark.divider,
-        text: NotionGithubTokens.dark.text,
-        muted: NotionGithubTokens.dark.muted,
-        subtle: NotionGithubTokens.dark.subtle,
-        accent: NotionGithubTokens.dark.accent,
-        success: NotionGithubTokens.dark.success,
-        danger: NotionGithubTokens.dark.danger,
-        warning: NotionGithubTokens.dark.warning,
-        heatmap: NotionGithubTokens.dark.heatmap,
-      );
+    bg: NotionGithubTokens.dark.bg,
+    surface: NotionGithubTokens.dark.surface,
+    border: NotionGithubTokens.dark.border,
+    divider: NotionGithubTokens.dark.divider,
+    text: NotionGithubTokens.dark.text,
+    muted: NotionGithubTokens.dark.muted,
+    subtle: NotionGithubTokens.dark.subtle,
+    accent: NotionGithubTokens.dark.accent,
+    success: NotionGithubTokens.dark.success,
+    danger: NotionGithubTokens.dark.danger,
+    warning: NotionGithubTokens.dark.warning,
+    heatmap: NotionGithubTokens.dark.heatmap,
+  );
 
   final Color bg;
   final Color surface;
@@ -398,7 +403,6 @@ class _TextSpec {
     // The token specs are private types in tokens.dart; we duck-type their
     // shape (fontSize/height/weight) to avoid leaking those types from the
     // tokens library.
-    // ignore: avoid_dynamic_calls
     return _TextSpec(
       // ignore: avoid_dynamic_calls
       fontSize: spec.fontSize as double,

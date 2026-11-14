@@ -70,7 +70,7 @@ ThemeData _buildTheme(Brightness brightness) {
     );
   }
 
-  final _Typography t = NotionGithubTokens.typography;
+  final t = NotionGithubTokens.typography;
 
   final TextTheme textTheme = baseText.copyWith(
     // Display / headlines — Notion-style page titles + section headers.

@@ -14,56 +14,72 @@
 /// used for titles — Nunito carries weight well.
 library;
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'tokens.dart';
 
 /// Builds the Warm Playful [ThemeData] for the given [brightness].
+/// Common entry point — every design system exposes `buildTheme`, so
+/// `lib/app.dart` never changes when you switch systems.
+ThemeData buildTheme(Brightness brightness) =>
+    buildWarmPlayfulTheme(brightness);
+
 ThemeData buildWarmPlayfulTheme(Brightness brightness) {
   final isLight = brightness == Brightness.light;
 
   final bg = isLight ? WarmPlayfulColorsLight.bg : WarmPlayfulColorsDark.bg;
-  final surface =
-      isLight ? WarmPlayfulColorsLight.surface : WarmPlayfulColorsDark.surface;
-  final border =
-      isLight ? WarmPlayfulColorsLight.border : WarmPlayfulColorsDark.border;
-  final divider =
-      isLight ? WarmPlayfulColorsLight.divider : WarmPlayfulColorsDark.divider;
-  final text =
-      isLight ? WarmPlayfulColorsLight.text : WarmPlayfulColorsDark.text;
-  final muted =
-      isLight ? WarmPlayfulColorsLight.muted : WarmPlayfulColorsDark.muted;
-  final accent =
-      isLight ? WarmPlayfulColorsLight.accent : WarmPlayfulColorsDark.accent;
-  final success =
-      isLight ? WarmPlayfulColorsLight.success : WarmPlayfulColorsDark.success;
-  final danger =
-      isLight ? WarmPlayfulColorsLight.danger : WarmPlayfulColorsDark.danger;
-  final warning =
-      isLight ? WarmPlayfulColorsLight.warning : WarmPlayfulColorsDark.warning;
+  final surface = isLight
+      ? WarmPlayfulColorsLight.surface
+      : WarmPlayfulColorsDark.surface;
+  final border = isLight
+      ? WarmPlayfulColorsLight.border
+      : WarmPlayfulColorsDark.border;
+  final divider = isLight
+      ? WarmPlayfulColorsLight.divider
+      : WarmPlayfulColorsDark.divider;
+  final text = isLight
+      ? WarmPlayfulColorsLight.text
+      : WarmPlayfulColorsDark.text;
+  final muted = isLight
+      ? WarmPlayfulColorsLight.muted
+      : WarmPlayfulColorsDark.muted;
+  final accent = isLight
+      ? WarmPlayfulColorsLight.accent
+      : WarmPlayfulColorsDark.accent;
+  final success = isLight
+      ? WarmPlayfulColorsLight.success
+      : WarmPlayfulColorsDark.success;
+  final danger = isLight
+      ? WarmPlayfulColorsLight.danger
+      : WarmPlayfulColorsDark.danger;
+  final warning = isLight
+      ? WarmPlayfulColorsLight.warning
+      : WarmPlayfulColorsDark.warning;
 
-  final scheme = ColorScheme.fromSeed(
-    seedColor: WarmPlayfulTokens.seed,
-    brightness: brightness,
-    // Pin the variant explicitly — Material 3 may change defaults.
-    dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
-  ).copyWith(
-    primary: accent,
-    onPrimary: WarmPlayfulColorsLight.bg, // cream on coral reads well
-    surface: surface,
-    onSurface: text,
-    surfaceContainerLowest: bg,
-    surfaceContainerLow: bg,
-    surfaceContainer: surface,
-    surfaceContainerHigh: surface,
-    surfaceContainerHighest: surface,
-    outline: border,
-    outlineVariant: divider,
-    error: danger,
-    onError: WarmPlayfulColorsLight.bg,
-    tertiary: success,
-  );
+  final scheme =
+      ColorScheme.fromSeed(
+        seedColor: WarmPlayfulTokens.seed,
+        brightness: brightness,
+        // Pin the variant explicitly — Material 3 may change defaults.
+        dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+      ).copyWith(
+        primary: accent,
+        onPrimary: WarmPlayfulColorsLight.bg, // cream on coral reads well
+        surface: surface,
+        onSurface: text,
+        surfaceContainerLowest: bg,
+        surfaceContainerLow: bg,
+        surfaceContainer: surface,
+        surfaceContainerHigh: surface,
+        surfaceContainerHighest: surface,
+        outline: border,
+        outlineVariant: divider,
+        error: danger,
+        onError: WarmPlayfulColorsLight.bg,
+        tertiary: success,
+      );
 
   // Nunito body text via google_fonts. Apply tuned weights/heights.
   final base = ThemeData(
@@ -237,8 +253,9 @@ ThemeData buildWarmPlayfulTheme(Brightness brightness) {
       backgroundColor: surface,
       selectedColor: accent,
       labelStyle: textTheme.bodySmall?.copyWith(color: text),
-      secondaryLabelStyle:
-          textTheme.bodySmall?.copyWith(color: WarmPlayfulColorsLight.bg),
+      secondaryLabelStyle: textTheme.bodySmall?.copyWith(
+        color: WarmPlayfulColorsLight.bg,
+      ),
       side: BorderSide(color: border),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(WarmPlayfulRadius.pill),
@@ -305,8 +322,9 @@ ThemeData buildWarmPlayfulTheme(Brightness brightness) {
         danger: danger,
         // Surfaces + text shades not cleanly mapped to ColorScheme
         muted: muted,
-        subtle:
-            isLight ? WarmPlayfulColorsLight.subtle : WarmPlayfulColorsDark.subtle,
+        subtle: isLight
+            ? WarmPlayfulColorsLight.subtle
+            : WarmPlayfulColorsDark.subtle,
         border: border,
         divider: divider,
       ),
@@ -361,8 +379,13 @@ class WarmPlayfulExtensions extends ThemeExtension<WarmPlayfulExtensions> {
 
   /// Convenient ordered list of the 5 category colors, e.g. for assigning
   /// a habit category color by index.
-  List<Color> get categoryPalette =>
-      <Color>[peach, sage, butter, lavender, sky];
+  List<Color> get categoryPalette => <Color>[
+    peach,
+    sage,
+    butter,
+    lavender,
+    sky,
+  ];
 
   @override
   WarmPlayfulExtensions copyWith({

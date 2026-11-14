@@ -5,7 +5,7 @@
 #   npx wrangler d1 migrations apply DB --remote   apply to production
 #   npx wrangler deploy                            ship
 
-name = "{{PROJECT_SLUG}}-api"
+name = "app-api"
 main = "build/worker/shim.mjs"
 compatibility_date = "2026-11-01"
 
@@ -14,14 +14,14 @@ command = "cargo install -q worker-build && worker-build --release"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "{{PROJECT_SLUG}}"
-# Paste the id printed by `npx wrangler d1 create {{PROJECT_SLUG}}`. Not a secret.
-database_id = "{{D1_DATABASE_ID}}"
+database_name = "app"
+# Placeholder id works for local dev. Before deploying, paste the id printed by `npx wrangler d1 create app`. Not a secret.
+database_id = "00000000-0000-0000-0000-000000000000"
 
 [vars]
 # Firebase Console → Project settings → Project ID. Not a secret.
 # Token verification rejects every request until this is set.
-FIREBASE_PROJECT_ID = "{{FIREBASE_PROJECT_ID}}"
+FIREBASE_PROJECT_ID = ""
 
 # Real secrets never go in this file:
 #   npx wrangler secret put <NAME>      (production)

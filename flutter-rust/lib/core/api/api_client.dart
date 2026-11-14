@@ -12,21 +12,25 @@ library;
 
 import 'dart:async';
 
+import 'package:app/core/api/api_exception.dart';
+import 'package:app/core/bootstrap.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-import 'api_exception.dart';
-
 class ApiClient {
-  ApiClient({http.Client? httpClient, FirebaseAuth? auth, String? baseUrl})
-      : _http = httpClient ?? http.Client(),
-        _auth = auth ?? FirebaseAuth.instance,
-        _baseUrl = baseUrl ?? dotenv.env['API_BASE_URL'] ?? '';
+  ApiClient({
+    required bool firebaseReady,
+    http.Client? httpClient,
+    String? baseUrl,
+  }) : _firebaseReady = firebaseReady,
+       _http = httpClient ?? http.Client(),
+       _baseUrl = baseUrl ?? dotenv.env['API_BASE_URL'] ?? '';
 
+  final bool _firebaseReady;
   final http.Client _http;
-  final FirebaseAuth _auth;
   final String _baseUrl;
 
   static const _timeout = Duration(seconds: 15);
@@ -34,7 +38,8 @@ class ApiClient {
   /// POSTs [jsonBody] (an already-encoded JSON string) to [path].
   /// Returns the response body. Throws an [ApiException] on any failure.
   Future<String> postJson(String path, String jsonBody) async {
-    final user = _auth.currentUser;
+    // `FirebaseAuth.instance` throws if Firebase never initialized.
+    final user = _firebaseReady ? FirebaseAuth.instance.currentUser : null;
     if (user == null) throw ApiUnauthenticatedException(path);
 
     final http.Response response;
@@ -60,6 +65,21 @@ class ApiClient {
     }
     return response.body;
   }
+
+  /// `GET /health` — the one unauthenticated route. Never throws.
+  Future<bool> isReachable() async {
+    try {
+      final response = await _http
+          .get(Uri.parse('$_baseUrl/health'))
+          .timeout(const Duration(seconds: 5));
+      return response.statusCode == 200;
+    } on Exception catch (e) {
+      debugPrint('[api] health check failed for $_baseUrl: $e');
+      return false;
+    }
+  }
 }
 
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
+final apiClientProvider = Provider<ApiClient>(
+  (ref) => ApiClient(firebaseReady: ref.watch(firebaseReadyProvider)),
+);

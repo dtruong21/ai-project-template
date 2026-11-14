@@ -77,6 +77,7 @@ Run the tests:
 flutter test                           # widget tests
 (cd rust && cargo test)                # shared validation rules
 (cd rust/core && cargo test)           # app-side payload builders
+(cd rust/api && python3 tests/api_test.py)   # every API route end to end (starts its own Worker)
 ```
 
 ---

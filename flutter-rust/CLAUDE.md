@@ -28,7 +28,7 @@ test/               mirrors lib/ (unit + widget) · integration_test/ (E2E)
 android/ ios/       native projects · rust_builder/ compiles rust/core into the app (generated)
 rust/shared/        wire models + validate() — no I/O
 rust/core/src/api/  app-side Rust exposed to Dart (build_*_payload)
-rust/api/           Worker: src/ (routes, auth.rs) · migrations/ · wrangler.toml
+rust/api/           Worker: src/ (lib.rs routes, auth.rs, http.rs, one file per table) · migrations/ · tests/api_test.py
 docs/               specs, process, release
 ```
 
@@ -36,9 +36,11 @@ docs/               specs, process, release
 
 - Dart strict via `very_good_analysis`. No `dynamic` at boundaries — narrow with freezed + json_serializable.
 - Backend only via `lib/core/api/api_client.dart`. Never import `package:http` from feature code. No client-to-database path exists.
-- Every Worker route, in order: `auth::uid_from_request` → parse → `validate()` → bound-parameter SQL scoped by the token uid. Never accept a uid from the client; never `format!` SQL.
+- Every Worker route, in order: `auth::uid_from_request` → `http::parse_body` → `validate()` → bound-parameter SQL scoped by the token uid. Never accept a uid from the client; no `format!` in `rust/api`.
+- Every error response goes through `rust/api/src/http.rs` (`{"error": {code, message}}`, codes in `shared::codes`). Lists are keyset-paged like `feedback::list`.
+- New table with a `uid` column → add it to `rust/api/src/account.rs` and to `rust/api/tests/api_test.py`.
 - Validation rules live once, in `rust/shared`. Never re-implement one in Dart or in `rust/api`.
-- After touching `rust/core/src/api/`: `flutter_rust_bridge_codegen generate`. After touching `rust/`: `cargo test`.
+- After touching `rust/core/src/api/`: `flutter_rust_bridge_codegen generate`. After touching `rust/`: `cargo test`; after touching `rust/api/`: `python3 rust/api/tests/api_test.py`.
 - Widgets are functions or `ConsumerWidget`. One screen = one widget in `features/<name>/presentation/`; logic in `application/`.
 - `ref.watch` only in `build()`; inside notifier methods use `ref.read`.
 - `id`, `uid`, timestamps are set server-side (token + D1 defaults). Timestamps are integer epoch seconds, UTC.

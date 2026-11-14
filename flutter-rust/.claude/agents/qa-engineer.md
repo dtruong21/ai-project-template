@@ -38,7 +38,7 @@ Universal failure modes on every feature involving data, time, or network:
 9. **Concurrent edits.** Same user editing same doc from two devices — last write wins, no crashes.
 10. **Lifecycle.** App backgrounded mid-write, killed, then resumed — no data loss. `WidgetsBindingObserver` paths verified.
 11. **Cold start.** App opened fresh after kill must reach the right screen within 3s on mid-tier Android.
-12. **Security.** Every Worker route authenticates and scopes queries by the token uid — verified with `curl` against `wrangler dev`: no token → 401, another user's row id → 404.
+12. **Security.** Every Worker route authenticates and scopes queries by the token uid — verified by `python3 rust/api/tests/api_test.py` (must cover every route: no token → 401, another user's row id → 404).
 13. **Accessibility.** TalkBack/VoiceOver reaches every interactive element. Semantic labels present. Dynamic type (`MediaQuery.textScaler`) up to 1.5× doesn't break layouts.
 14. **Dark mode parity.** Every screen renders correctly in both `Brightness.light` and `Brightness.dark`.
 
@@ -88,7 +88,7 @@ Before signing off for release (`/release`):
 - [ ] `flutter test integration_test` passes on iOS Simulator AND Android Emulator
 - [ ] All P0/P1 bugs closed
 - [ ] No new `dart:developer` warnings or debug prints in release mode
-- [ ] Worker auth verified with `curl` — no token → 401, cross-user access → 404; every route calls `auth::uid_from_request`
+- [ ] `python3 rust/api/tests/api_test.py` passes and has a block for every route added in this release (no token → 401, cross-user → 404)
 - [ ] Cold-start time under 3s on mid-tier Android (`flutter run --profile`)
 - [ ] Memory: no obvious leaks over 5 min of normal use (DevTools memory tab)
 - [ ] Network: feature still works on Slow-3G throttle

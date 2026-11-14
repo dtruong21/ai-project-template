@@ -11,12 +11,26 @@
 //!
 //! The returned uid is the ONLY identity a route may trust.
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
 use serde::Deserialize;
-use worker::{Env, Fetch, Request, Url};
+use worker::{Date, Env, Fetch, Request, Url};
 
-const JWKS_URL: &str =
+const GOOGLE_JWKS_URL: &str =
     "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
+
+/// Google rotates these keys every few days and serves them with a max-age of
+/// several hours. One hour keeps us well inside that and means one key fetch
+/// per isolate per hour instead of one per request.
+const JWKS_TTL_MS: u64 = 60 * 60 * 1000;
+
+thread_local! {
+    /// Per-isolate cache: `(fetched_at_ms, keys)`. Isolates are reused across
+    /// requests, so this survives between them; a new isolate just refetches.
+    static JWKS_CACHE: RefCell<Option<(u64, Rc<Jwks>)>> = const { RefCell::new(None) };
+}
 
 #[derive(Deserialize)]
 struct Jwks {
@@ -59,12 +73,16 @@ pub async fn uid_from_request(req: &Request, env: &Env) -> Result<String, String
         .and_then(|h| h.kid)
         .ok_or("Malformed token.")?;
 
-    // ponytail: fetches Google's keys on every request. They rotate rarely —
-    // cache them (Cache API or KV, honoring the response's max-age) once
-    // latency or request volume matters.
-    let jwks = fetch_jwks()
+    // A `kid` we don't have cached may be a freshly rotated key: refetch once
+    // before rejecting.
+    let mut jwks = jwks(env, false)
         .await
         .map_err(|_| "Could not load token signing keys.")?;
+    if !jwks.keys.iter().any(|k| k.kid == kid) {
+        jwks = jwks_fresh(env)
+            .await
+            .map_err(|_| "Could not load token signing keys.")?;
+    }
     let jwk = jwks
         .keys
         .iter()
@@ -76,7 +94,7 @@ pub async fn uid_from_request(req: &Request, env: &Env) -> Result<String, String
     // Pinning RS256 here is what blocks `alg: none` / HS256 downgrade tricks.
     let mut validation = Validation::new(Algorithm::RS256);
     validation.set_audience(&[project_id.as_str()]);
-    validation.set_issuer(&[format!("https://securetoken.google.com/{project_id}")]);
+    validation.set_issuer(&[["https://securetoken.google.com/", project_id.as_str()].concat()]);
 
     let claims = decode::<Claims>(token, &key, &validation)
         .map_err(|_| "Invalid or expired token.")?
@@ -88,7 +106,35 @@ pub async fn uid_from_request(req: &Request, env: &Env) -> Result<String, String
     Ok(claims.sub)
 }
 
-async fn fetch_jwks() -> worker::Result<Jwks> {
-    let mut response = Fetch::Url(Url::parse(JWKS_URL)?).send().await?;
-    response.json().await
+async fn jwks(env: &Env, force: bool) -> worker::Result<Rc<Jwks>> {
+    let now = Date::now().as_millis();
+    if !force {
+        let cached = JWKS_CACHE.with(|cache| cache.borrow().clone());
+        if let Some((fetched_at, keys)) = cached {
+            if now.saturating_sub(fetched_at) < JWKS_TTL_MS {
+                return Ok(keys);
+            }
+        }
+    }
+    let mut response = Fetch::Url(Url::parse(&jwks_url(env))?).send().await?;
+    let keys: Rc<Jwks> = Rc::new(response.json().await?);
+    JWKS_CACHE.with(|cache| *cache.borrow_mut() = Some((now, keys.clone())));
+    Ok(keys)
+}
+
+async fn jwks_fresh(env: &Env) -> worker::Result<Rc<Jwks>> {
+    jwks(env, true).await
+}
+
+/// Google's key set, unless `FIREBASE_JWKS_URL` overrides it.
+///
+/// SECURITY: whoever controls this URL can mint tokens for any user. The
+/// override exists only so `tests/api_test.sh` can sign its own test tokens.
+/// Never set it in `wrangler.toml` or as a deployed variable.
+fn jwks_url(env: &Env) -> String {
+    env.var("FIREBASE_JWKS_URL")
+        .map(|v| v.to_string())
+        .ok()
+        .filter(|v| !v.is_empty())
+        .unwrap_or_else(|| GOOGLE_JWKS_URL.to_string())
 }

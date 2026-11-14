@@ -30,9 +30,10 @@ final _rustBridgeOkProvider = Provider<bool>((ref) {
   }
 });
 
-final FutureProvider<bool> _apiReachableProvider = FutureProvider.autoDispose<bool>(
-  (ref) => ref.watch(apiClientProvider).isReachable(),
-);
+final FutureProvider<bool> _apiReachableProvider =
+    FutureProvider.autoDispose<bool>(
+      (ref) => ref.watch(apiClientProvider).isReachable(),
+    );
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});

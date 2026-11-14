@@ -2,6 +2,7 @@
 //! After any change here: `flutter_rust_bridge_codegen generate`.
 
 pub mod feedback;
+pub mod profile;
 
 #[flutter_rust_bridge::frb(init)]
 pub fn init_app() {

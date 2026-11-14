@@ -20,7 +20,7 @@ Constraints:
 - No `dynamic`. No `cloud_firestore` imports in widgets/providers — only inside `lib/core/firebase/`.
 - No magic values — colors/spacing/type from `lib/core/design/tokens.dart` + `Theme.of(context)`. `const` constructors wherever possible.
 - Package imports only (`package:app_name/…`) across feature boundaries — no relative cross-feature imports.
-- No direct analytics SDK calls — always `track(AppEvent.x(...))` from `lib/core/analytics/client.dart`.
+- No direct analytics SDK calls — always `track(SomeEvent(...))` — `track` from `lib/core/analytics/client.dart`, event classes from `events.dart`.
 - Run `dart run build_runner build --delete-conflicting-outputs` after touching `@freezed`/`@riverpod`/`@TypedGoRoute`.
 - Test the happy path: `flutter test test/features/<name>/` + a manual run on iOS + Android sim before declaring done.
 - After done, hand off to QA: `/test <feature>`.

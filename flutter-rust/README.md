@@ -1,10 +1,10 @@
 # Project Template — Flutter + Rust + Cloudflare
 
-A starting point for solo-built mobile MVPs. Ships the Claude Code config, docs scaffolding, and a strict development workflow optimized for **token efficiency** and **QA quality**.
+A starting point for solo-built MVPs on iOS, Android, web, macOS and Windows. Ships the Claude Code config, docs scaffolding, and a strict development workflow optimized for **token efficiency** and **QA quality**.
 
 **Stack:** Flutter UI + Rust logic (flutter_rust_bridge) + Rust API on Cloudflare Workers + D1 + R2. Firebase kept for Auth and push only. Riverpod (AsyncNotifier) + go_router + freezed + Material 3.
 
-> **Status (2026-11-12): runs out of the box; signed-in path needs your Firebase project.** This stack is a complete app, not an overlay. Verified on an iOS simulator: it builds with the Rust library, the bridge loads, the API health check passes, and Rust validation reaches the UI; Flutter, `rust/shared` and `rust/core` tests pass; the Worker accepts a correctly signed token and rejects forged ones. **Not verified:** the signed-in round trip with a real Firebase project, Android builds, physical devices, `wrangler deploy`, Codemagic. Details at the end of `SETUP.md`.
+> **Status (2026-11-12): runs out of the box; signed-in path needs your Firebase project.** This stack is a complete app, not an overlay. Verified on an iOS simulator: it builds with the Rust library, the bridge loads, the API health check passes, and Rust validation reaches the UI; Flutter, `rust/shared` and `rust/core` tests pass; the Worker accepts a correctly signed token and rejects forged ones. **Not verified:** the signed-in round trip with a real Firebase project, Android builds, physical devices, `wrangler deploy`, Codemagic. **Platforms:** iOS and Android projects are included. Web, macOS and Windows are described in `SETUP.md` ("More platforms"), `codemagic.yaml` and the docs, but their folders are not generated and none of those steps have been run. Known gaps there: the Worker has no CORS handling (web needs it), web hosting must send COOP/COEP headers, `firebase_auth` is beta on macOS/Windows and `firebase_messaging` has no Windows support. Linux is out (no Firebase Auth). Details at the end of `SETUP.md`.
 
 ---
 

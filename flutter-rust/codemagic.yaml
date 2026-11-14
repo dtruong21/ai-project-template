@@ -1,7 +1,9 @@
 # Codemagic CI/CD for the Flutter template.
 #
-# Three workflows: ios_release, android_release, web_release.
-# Each runs: pub get → codegen → tests → build → publish.
+# Five workflows: ios_release, android_release, macos_release, windows_release,
+# web_release. Each runs: pub get → codegen → tests → build → publish.
+# macos_release, windows_release and the web Rust steps are UNVERIFIED: they
+# were written from docs, not run. Expect to adjust the toolchain install steps.
 #
 # Before your first build, wire credentials in Codemagic UI:
 #   - Teams → Integrations → App Store Connect API key  (name it: app_store_connect)
@@ -142,7 +144,63 @@ workflows:
         submit_as_draft: false
 
   # ─────────────────────────────────────────────────────────────────────
-  # Web — optional, deploy to Firebase Hosting
+  # macOS — build, sign and notarize (.app zipped as an artifact)
+  # ─────────────────────────────────────────────────────────────────────
+  macos_release:
+    name: macOS release
+    instance_type: *mac
+    max_build_duration: 60
+    environment:
+      flutter: *flutter_version
+      xcode: latest
+      cocoapods: default
+      # Signing + notarization: add a Developer ID certificate under
+      # App settings → Code signing identities → macOS, then a notarize step.
+    cache:
+      cache_paths: *cache_paths
+    scripts:
+      - *get_packages
+      - name: Rust toolchain (macOS targets)
+        script: |
+          rustup target add aarch64-apple-darwin x86_64-apple-darwin
+          cargo install flutter_rust_bridge_codegen
+      - *run_codegen
+      - *run_analyzer
+      - *run_tests
+      - name: Build macOS app
+        script: |
+          flutter build macos --release
+          ditto -c -k --keepParent build/macos/Build/Products/Release/*.app build/macos/app.zip
+    artifacts:
+      - build/macos/app.zip
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Windows — build (.exe + dlls as an artifact). Installer (MSIX) not wired.
+  # ─────────────────────────────────────────────────────────────────────
+  windows_release:
+    name: Windows release
+    instance_type: windows_x2
+    max_build_duration: 60
+    environment:
+      flutter: *flutter_version
+    scripts:
+      - *get_packages
+      - name: Rust toolchain
+        script: |
+          rustup target add x86_64-pc-windows-msvc
+          cargo install flutter_rust_bridge_codegen
+      - *run_codegen
+      - *run_analyzer
+      - *run_tests
+      - name: Build Windows app
+        script: |
+          flutter build windows --release
+    artifacts:
+      - build/windows/x64/runner/Release/**
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Web — optional, deploy to Firebase Hosting or Cloudflare Pages.
+  # The host MUST send COOP/COEP headers (see SETUP.md "More platforms" → Web).
   # ─────────────────────────────────────────────────────────────────────
   web_release:
     name: Web release
@@ -156,12 +214,19 @@ workflows:
       cache_paths: *cache_paths
     scripts:
       - *get_packages
+      - name: Rust toolchain (wasm)
+        script: |
+          rustup toolchain install nightly
+          rustup +nightly component add rust-src
+          rustup +nightly target add wasm32-unknown-unknown
+          cargo install wasm-pack flutter_rust_bridge_codegen
       - *run_codegen
       - *run_analyzer
       - *run_tests
       - name: Build web
         script: |
-          flutter build web --release --web-renderer canvaskit
+          flutter_rust_bridge_codegen build-web
+          flutter build web --release
       # Uncomment when firebase_hosting group is wired:
       # - name: Deploy to Firebase Hosting
       #   script: |

@@ -8,7 +8,7 @@ This repo holds **multiple project templates**, one subdirectory per stack. Each
 |---|---|---|
 | [`react-native/`](react-native/) | React Native (Expo) + Firebase | JS ecosystem, EAS Build, Zustand + TanStack Query, NativeWind |
 | [`flutter/`](flutter/) | Flutter + Firebase | Dart strict typing, Material 3, Riverpod, go_router, Codemagic |
-| [`flutter-rust/`](flutter-rust/) | Flutter + Rust + Cloudflare (Workers, D1, R2); Firebase Auth/FCM only | Lowest run cost and footprint; shared Rust validation on app and API; no offline sync/realtime by default. Unlike the other two, it is a complete runnable app, not an overlay — see its README status note |
+| [`flutter-rust/`](flutter-rust/) | Flutter + Rust + Cloudflare (Workers, D1, R2); Firebase Auth/FCM only | Lowest run cost and footprint; shared Rust validation on app and API; ships iOS + Android (web, macOS, Windows documented but not generated or verified); no offline sync/realtime by default. Unlike the other two, it is a complete runnable app, not an overlay — see its README status note |
 
 All share the same workflow shape (`/idea → /spec → /design → /build → /test → /release → /launch`), the same 3 swappable design systems (`notion-github`, `linear-minimal`, `warm-playful`), and the same standing rules (MVP-first, UX priority, QA gate, analytics-first, token discipline).
 
@@ -34,7 +34,7 @@ cd react-native/   # or: cd flutter/  or: cd flutter-rust/
 
 Inside the subdir, the full Claude Code setup is active — that subdir's `CLAUDE.md`, its 7-role agent roster in `.claude/agents/` (idea-validator, product-strategist, ux-designer, developer, qa-engineer, release-manager, marketer), its 17 slash commands (`.claude/commands/`), and its role "hats" in `docs/PRINCIPLES.md`. Most work runs in the main loop as a hat; only `/test` and `/qa-sweep` spawn a sub-agent by default — the rest of the roster is opt-in, for work big enough to isolate. This is tuned for Claude Pro usage limits. Work there.
 
-If a change applies to ALL stacks (e.g. a sharpened command or role hat, a new standing rule, an additional edge-case in TEST-PLAN.md), **mirror it across every stack**. Otherwise they drift. `flutter-rust/` started as a copy of `flutter/`: everything except the data layer (`/d1`, `rust/`, `lib/core/api/`, SECURITY, SETUP Steps 5–7) should stay identical between the two.
+If a change applies to ALL stacks (e.g. a sharpened command or role hat, a new standing rule, an additional edge-case in TEST-PLAN.md), **mirror it across every stack**. Otherwise they drift. `flutter-rust/` started as a copy of `flutter/`: everything except the data layer (`/d1`, `rust/`, `lib/core/api/`, SECURITY, SETUP), the committed app itself (`pubspec.yaml`, `android/`, `ios/`, `lib/main.dart`, `rust_builder/` — `flutter/` is still an overlay), and the platform list (web, macOS, Windows live only in `flutter-rust/`: SETUP "More platforms", `codemagic.yaml`, TEST-PLAN, BENCHMARK, RELEASE) should stay identical between the two.
 
 ## Adding a new stack
 

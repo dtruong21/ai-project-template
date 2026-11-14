@@ -211,6 +211,16 @@ Invite 5–10 testers. Run a 1–2 week closed beta. Listen.
 
 ---
 
+## Step 10.5 — Desktop and web builds
+
+Codemagic workflows: `macos_release`, `windows_release`, `web_release` (UNVERIFIED — see the note in `codemagic.yaml`).
+
+- **macOS:** needs a Developer ID certificate (same $99 Apple program) to sign, then notarization with `xcrun notarytool`. Unsigned apps are blocked by Gatekeeper. Mac App Store is a separate listing and needs the sandbox entitlements reviewed.
+- **Windows:** the workflow produces a folder with the `.exe` and dlls, not an installer. Package as MSIX (`flutter pub add --dev msix`) or an installer tool, and sign it — unsigned installers trigger SmartScreen warnings. Microsoft Store is optional.
+- **Web:** deploy `build/web` to your host and confirm it sends `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, or the Rust wasm will not load. Check `crossOriginIsolated` in the browser console.
+
+---
+
 ## Step 11 — Public launch
 
 1. Bump `version:` in `pubspec.yaml` (PATCH for fixes, MINOR for features, bump the `+buildNumber` always)

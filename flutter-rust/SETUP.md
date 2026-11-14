@@ -227,6 +227,61 @@ Generated files (`*.g.dart`, `lib/src/rust/`, `rust/core/src/frb_generated.rs`) 
 
 ---
 
+## More platforms — web, macOS, Windows (not included, not verified)
+
+The template ships `android/` and `ios/` only. Nothing in this section has been run; treat it as a starting point and expect to fix things.
+
+Generate the extra platform folders (drop any you will not ship):
+
+```bash
+flutter create . --platforms=web,macos,windows
+```
+
+Build hosts: macOS and iOS need a Mac, Windows needs Windows (or the `windows_release` CI workflow), web and Android build anywhere. Linux is out — no Firebase Auth.
+
+Firebase caveat: `firebase_auth` is beta on macOS and Windows (Google: Windows is "not intended for production use cases"), and `firebase_messaging` has no Windows support. Guard push code with `defaultTargetPlatform`.
+
+### Desktop (macOS, Windows)
+
+```bash
+rustup target add aarch64-apple-darwin x86_64-apple-darwin
+# Windows host only: rustup target add x86_64-pc-windows-msvc
+# (needs Visual Studio "Desktop development with C++" — also required by Flutter on Windows)
+```
+
+`flutter run -d macos` / `-d windows` builds the Rust crate like mobile. macOS only: the sandbox blocks outgoing network by default. Add to **both** `macos/Runner/DebugProfile.entitlements` and `macos/Runner/Release.entitlements`:
+
+```xml
+<key>com.apple.security.network.client</key>
+<true/>
+```
+
+Without it every API call fails on macOS while working on iOS.
+
+### Web
+
+The web build runs the Rust crate as wasm with threads. One-time toolchain:
+
+```bash
+rustup toolchain install nightly
+rustup +nightly component add rust-src
+rustup +nightly target add wasm32-unknown-unknown
+cargo install wasm-pack
+```
+
+Build and serve (sets the headers for you in dev):
+
+```bash
+flutter_rust_bridge_codegen build-web      # compiles rust/core to wasm into web/pkg
+dart run flutter_rust_bridge:serve         # use instead of `flutter run -d chrome`
+```
+
+**Production hosting must send** `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`, or the wasm module fails to start. Set them in your host's header config (Cloudflare Pages `_headers`, Firebase Hosting `headers`).
+
+**The template Worker has no CORS handling yet**: a browser blocks every call, including the preflight, until the Worker answers `OPTIONS` and adds `Access-Control-Allow-Origin` and `Access-Control-Allow-Headers: authorization, content-type`. Add it in `rust/api` before shipping web. Keep `rust/core` free of `dart:io`-only assumptions and filesystem access so it compiles to wasm.
+
+---
+
 ## Troubleshooting
 
 - **iOS: `Binary ... Flutter.framework/Flutter does not contain architectures "arm64 x86_64"`** — seen with Flutter 3.44 + Xcode 27 when running `flutter build ios --simulator`. Use `flutter run -d <simulator-id>` (builds one architecture) or upgrade Flutter.
@@ -244,4 +299,4 @@ Generated files (`*.g.dart`, `lib/src/rust/`, `rust/core/src/frb_generated.rs`) 
 
 Verified (2026-11-12, Flutter 3.44.6, Xcode 27.2, cargo 1.100, flutter_rust_bridge 2.13, wrangler 4.161): Steps 1–2 on an iOS simulator — app builds with the Rust library, bridge loads, API health check passes, Rust validation message reaches the UI; all test suites pass; the Worker accepts a correctly signed token and rejects forged ones (tested with a local signing key).
 
-**Not verified:** Step 3 with a real Firebase project (so the signed-in round trip from the app, and verification against Google's live keys), any Android build, a physical device, `wrangler deploy`, and the Codemagic workflows (they do not build the Rust crate yet — see the note in `codemagic.yaml`). Update this section after your first full setup.
+**Not verified:** Step 3 with a real Firebase project (so the signed-in round trip from the app, and verification against Google's live keys), any Android build, a physical device, everything under "More platforms" (web, macOS, Windows), `wrangler deploy`, and the Codemagic workflows. Update this section after your first full setup.

@@ -23,6 +23,9 @@ database_id = "00000000-0000-0000-0000-000000000000"
 # Token verification rejects every request until this is set.
 FIREBASE_PROJECT_ID = ""
 
+# Do NOT add FIREBASE_JWKS_URL here or to any deployed environment. It replaces
+# Google's signing keys and exists only for tests/api_test.py.
+
 # Real secrets never go in this file:
 #   npx wrangler secret put <NAME>      (production)
 #   .dev.vars                           (local, gitignored)

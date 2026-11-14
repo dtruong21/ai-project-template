@@ -8,6 +8,12 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
+pub mod api;
+pub mod profile;
+
+pub use api::{codes, page_size, ApiError, ApiErrorBody, Cursor, Page};
+pub use profile::{Profile, ProfileUpdate};
+
 pub const FEEDBACK_BODY_MAX_CHARS: usize = 2000;
 pub const SHORT_FIELD_MAX_CHARS: usize = 200;
 
@@ -53,11 +59,27 @@ pub struct NewFeedback {
     pub platform: String,
 }
 
+/// One feedback row as returned by `GET /v1/feedback`. No `uid`: a caller
+/// only ever sees their own rows.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Feedback {
+    pub id: String,
+    pub category: FeedbackCategory,
+    pub body: String,
+    pub route: String,
+    pub app_version: String,
+    pub platform: String,
+    pub created_at: i64,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ValidationError {
     BodyEmpty,
     BodyTooLong,
     FieldTooLong(&'static str),
+    DisplayNameEmpty,
+    DisplayNameTooLong,
+    DisplayNameInvalid,
 }
 
 impl fmt::Display for ValidationError {
@@ -69,6 +91,13 @@ impl fmt::Display for ValidationError {
                 "Feedback is too long (max {FEEDBACK_BODY_MAX_CHARS} characters)."
             ),
             Self::FieldTooLong(field) => write!(f, "Field `{field}` is too long."),
+            Self::DisplayNameEmpty => write!(f, "Name can't be empty."),
+            Self::DisplayNameTooLong => write!(
+                f,
+                "Name is too long (max {} characters).",
+                profile::DISPLAY_NAME_MAX_CHARS
+            ),
+            Self::DisplayNameInvalid => write!(f, "Name contains characters that aren't allowed."),
         }
     }
 }
@@ -117,7 +146,10 @@ mod tests {
 
     #[test]
     fn rejects_blank_body() {
-        assert_eq!(feedback("  \n ").validate(), Err(ValidationError::BodyEmpty));
+        assert_eq!(
+            feedback("  \n ").validate(),
+            Err(ValidationError::BodyEmpty)
+        );
     }
 
     #[test]
@@ -126,7 +158,10 @@ mod tests {
         let at_limit = "é".repeat(FEEDBACK_BODY_MAX_CHARS);
         assert_eq!(feedback(&at_limit).validate(), Ok(()));
         let over = "é".repeat(FEEDBACK_BODY_MAX_CHARS + 1);
-        assert_eq!(feedback(&over).validate(), Err(ValidationError::BodyTooLong));
+        assert_eq!(
+            feedback(&over).validate(),
+            Err(ValidationError::BodyTooLong)
+        );
     }
 
     #[test]

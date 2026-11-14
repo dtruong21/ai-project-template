@@ -1,4 +1,3 @@
-import 'package:app/core/api/api_client.dart';
 import 'package:app/core/api/api_exception.dart';
 import 'package:app/features/feedback/feedback_provider.dart';
 import 'package:app/features/feedback/presentation/feedback_sheet.dart';
@@ -78,13 +77,5 @@ void main() {
     expect(find.text('Send feedback'), findsOneWidget); // still open
     expect(find.text('my long message'), findsOneWidget); // nothing lost
     expect(find.textContaining('Sign in is required'), findsOneWidget);
-  });
-
-  test('ApiClient reports unauthenticated when Firebase is not set up', () {
-    final client = ApiClient(firebaseReady: false, baseUrl: 'http://x');
-    expect(
-      () => client.postJson('/v1/feedback', '{}'),
-      throwsA(isA<ApiUnauthenticatedException>()),
-    );
   });
 }

@@ -143,8 +143,9 @@ String _errorMessage(Object error) => switch (error) {
   ApiUnauthenticatedException() => 'Sign in is required to send feedback.',
   ApiNetworkException() =>
     "Can't reach the server. Check your connection and try again.",
-  // 422 body is the user-facing validation message from the shared rules.
-  ApiResponseException(statusCode: 422, :final body) => body,
+  // The Worker's validation message comes from the same shared Rust rules
+  // and is written for users.
+  ApiResponseException(isValidation: true, :final message) => message,
   ApiResponseException() => 'Something went wrong on our side. Try again.',
   // Thrown by the Rust validation before any request is made; its message
   // is user-facing by contract (see rust/shared).

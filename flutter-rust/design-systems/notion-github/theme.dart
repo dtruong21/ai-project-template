@@ -11,6 +11,7 @@
 /// the Material 3 surfaces (ColorScheme, TextTheme, etc.).
 library;
 
+import 'package:app/core/ui/ui_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -196,6 +197,20 @@ ThemeData _buildTheme(Brightness brightness) {
       ),
     ),
     extensions: <ThemeExtension<dynamic>>[
+      // Contract with the component kit (lib/core/ui/) — keep in every system.
+      UiTokens(
+        success: c.success,
+        warning: c.warning,
+        danger: c.danger,
+        muted: c.muted,
+        radiusSm: NotionGithubTokens.radius.sm,
+        radiusMd: NotionGithubTokens.radius.md,
+        radiusLg: NotionGithubTokens.radius.lg,
+        motionFast: NotionGithubTokens.motion.fast,
+        motionNormal: NotionGithubTokens.motion.normal,
+        motionSlow: NotionGithubTokens.motion.slow,
+        motionCurve: NotionGithubTokens.motion.easing,
+      ),
       NotionGithubExtensions(
         heatmap: c.heatmap,
         monoFamily: NotionGithubTokens.typography.monoFamily,

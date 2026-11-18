@@ -18,7 +18,7 @@ Build order (strict):
 
 Constraints:
 - No `dynamic`. No `package:http` imports in widgets/providers — only inside `lib/core/api/`. No validation rules in Dart — they live in `rust/shared`.
-- No magic values — colors/spacing/type from `lib/core/design/tokens.dart` + `Theme.of(context)`. `const` constructors wherever possible.
+- Build screens from the component kit (`import 'package:app/core/ui/ui.dart'`): `AppButton`, `AsyncValueView` + state views (loading/empty/error/offline), `confirm` / `showMessage` / `showError`, `AppAvatar`. In feature code read style only from `Theme.of(context)`, `UiTokens.of(context)` and `Gap` — never a design system's own token classes, or the screen breaks when the system is switched. Spacing from `Gap`. Lists and detail screens render through `AsyncValueView`; destructive actions through `confirm(destructive: true)`. `const` constructors wherever possible.
 - Package imports only (`package:app_name/…`) across feature boundaries — no relative cross-feature imports.
 - No direct analytics SDK calls — always `track(SomeEvent(...))` — `track` from `lib/core/analytics/client.dart`, event classes from `events.dart`.
 - Run `dart run build_runner build --delete-conflicting-outputs` after touching `@freezed`/`@riverpod`/`@TypedGoRoute`.

@@ -32,7 +32,10 @@ mkdir -p docs
 
 # Copy the chosen system
 cp "$SRC/tokens.dart" lib/core/design/tokens.dart
-cp "$SRC/theme.dart" lib/core/design/theme.dart
+# theme.dart imports its tokens relatively inside design-systems/; inside lib/
+# the project lint requires a package: import.
+sed "s#import 'tokens.dart';#import 'package:app/core/design/tokens.dart';#" \
+  "$SRC/theme.dart" > lib/core/design/theme.dart
 cp "$SRC/DESIGN.md" docs/DESIGN.md
 cp "$SRC/mood.svg" docs/design-mood.svg
 
@@ -46,7 +49,6 @@ echo "✓ Removed design-systems/ — final project carries only the chosen syst
 
 echo ""
 echo "Next steps:"
-echo "  1. Wire lib/core/design/theme.dart into app.dart via MaterialApp.router(theme:, darkTheme:)"
-echo "     (see lib/core/design/theme.dart header comment)"
-echo "  2. Install the chosen system's fonts via google_fonts (Inter / Nunito / JetBrains Mono)"
+echo "  1. Fully restart the app (lib/app.dart already calls buildTheme — nothing to wire)"
+echo "  2. Open the Component gallery from the home screen; check light AND dark"
 echo "  3. Review docs/DESIGN.md and customize for your brand"

@@ -165,7 +165,7 @@ The app ships with `notion-github` pre-installed in `lib/core/design/`. Two more
 ./scripts/pick-design-system.sh warm-playful     # or keep the default: notion-github
 ```
 
-The script copies `tokens.dart` + `theme.dart` into `lib/core/design/`, `DESIGN.md` into `docs/`, and removes `design-systems/`. Every system exposes the same `buildTheme(Brightness)`, so `lib/app.dart` needs no change — restart the app to see it.
+The script copies `tokens.dart` + `theme.dart` into `lib/core/design/`, `DESIGN.md` into `docs/`, and removes `design-systems/`. Every system exposes the same `buildTheme(Brightness)` and registers the same `UiTokens`, so neither `lib/app.dart` nor any component changes — restart the app, then open **Component gallery** from the home screen (debug builds) to see every component in the new system. Toggle dark mode with the moon icon.
 
 **Switching later is expensive.** After 3+ screens expect 1–2 days. Pick deliberately.
 

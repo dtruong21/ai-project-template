@@ -12,6 +12,7 @@
 //
 // Never import `tokens.dart` from a screen — go through the theme.
 
+import 'package:app/core/ui/ui_tokens.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -193,7 +194,9 @@ ThemeData buildTheme(Brightness brightness) {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         backgroundColor: palette.accent,
-        foregroundColor: Colors.white,
+        // The dark accent is light: white on it fails contrast. onPrimary is
+        // white in light mode and the dark background color in dark mode.
+        foregroundColor: colorScheme.onPrimary,
         textStyle: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.s5,
@@ -297,7 +300,23 @@ ThemeData buildTheme(Brightness brightness) {
       ),
     ),
     iconTheme: IconThemeData(color: palette.text, size: 20),
-    extensions: <ThemeExtension<dynamic>>[appPalette],
+    extensions: <ThemeExtension<dynamic>>[
+      appPalette,
+      // Contract with the component kit (lib/core/ui/) — keep in every system.
+      UiTokens(
+        success: palette.success,
+        warning: palette.warning,
+        danger: palette.danger,
+        muted: palette.muted,
+        radiusSm: AppRadius.sm,
+        radiusMd: AppRadius.md,
+        radiusLg: AppRadius.lg,
+        motionFast: AppMotion.fast,
+        motionNormal: AppMotion.normal,
+        motionSlow: AppMotion.slow,
+        motionCurve: AppMotion.curve,
+      ),
+    ],
   );
 }
 
@@ -323,8 +342,12 @@ TextTheme _buildTextTheme(Color text, Color muted) {
     headlineLarge: apply(AppTypography.h1),
     headlineMedium: apply(AppTypography.h1),
     headlineSmall: apply(AppTypography.h2),
-    titleLarge: apply(AppTypography.h1),
-    titleMedium: apply(AppTypography.h2),
+    // Material uses titleLarge for app bars and dialog titles; h1 (28) is
+    // page-heading size and overflows there.
+    titleLarge: apply(AppTypography.h2),
+    titleMedium: apply(
+      AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+    ),
     titleSmall: apply(AppTypography.body.copyWith(fontWeight: FontWeight.w600)),
     bodyLarge: apply(AppTypography.body),
     bodyMedium: apply(AppTypography.body),

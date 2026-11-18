@@ -47,3 +47,13 @@ Good candidates for additions:
 - **Dark techno** — neon accents on near-black, for crypto / gaming / fintech.
 
 Don't add a fourth until you've shipped a project on at least two of the existing three. Premature design systems gather dust.
+
+## The contract every system must keep
+
+The app and the component kit (`lib/core/ui/`) depend on three things. Keep them when editing a system or adding a fourth:
+
+1. **`ThemeData buildTheme(Brightness)`** in `theme.dart` — the only function `lib/app.dart` calls.
+2. **`UiTokens(...)` registered in `ThemeData.extensions`** — success / warning / danger / muted colors, three radii, three motion durations and a curve. Components read these, never the system's own token classes.
+3. **`FilledButton` is the primary action**, `OutlinedButton` the secondary one, and text on every filled color meets WCAG AA (4.5:1). Check with the gallery in light and dark after any color change.
+
+Known state (measured 2026-11): warm-playful and linear-minimal were corrected for button-text contrast. notion-github's white on blue (`#2383E2`) is 3.9:1 — passes for large/bold UI text, below AA for small text; darken the accent if your app puts small text on it.

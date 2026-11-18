@@ -8,10 +8,13 @@ library;
 
 import 'package:app/core/api/api_client.dart';
 import 'package:app/core/bootstrap.dart';
+import 'package:app/core/ui/ui.dart';
 import 'package:app/features/feedback/presentation/feedback_sheet.dart';
 import 'package:app/src/rust/api/feedback.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 /// Proves the Rust library is loaded: asks Rust to validate a known-good
 /// payload. Any failure here means the bridge is broken, not the input.
@@ -48,7 +51,7 @@ class HomeScreen extends ConsumerWidget {
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(_apiReachableProvider.future),
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(Gap.lg),
           children: [
             Text('It runs.', style: text.headlineMedium),
             const SizedBox(height: 8),
@@ -83,12 +86,32 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
+            const SizedBox(height: Gap.xl),
+            AppButton(
+              label: 'Send feedback',
+              icon: Icons.chat_bubble_outline,
+              expand: true,
               onPressed: () => showFeedbackSheet(context, route: '/'),
-              icon: const Icon(Icons.chat_bubble_outline),
-              label: const Text('Send feedback'),
             ),
+            const SizedBox(height: Gap.sm),
+            AppButton(
+              label: 'Settings',
+              icon: Icons.settings_outlined,
+              variant: AppButtonVariant.secondary,
+              expand: true,
+              onPressed: () => context.push('/settings'),
+            ),
+            // Debug builds only — the route is not registered in release.
+            if (kDebugMode) ...[
+              const SizedBox(height: Gap.sm),
+              AppButton(
+                label: 'Component gallery',
+                icon: Icons.palette_outlined,
+                variant: AppButtonVariant.text,
+                expand: true,
+                onPressed: () => context.push('/gallery'),
+              ),
+            ],
           ],
         ),
       ),

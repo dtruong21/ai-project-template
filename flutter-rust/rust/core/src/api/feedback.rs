@@ -7,7 +7,7 @@
 //! owns the network call (`lib/core/api/api_client.dart`) so the app does not
 //! carry a second TLS stack.
 
-use shared::{FeedbackCategory, NewFeedback};
+use shared::{Feedback, FeedbackCategory, NewFeedback, Page};
 
 /// Validates feedback with the same rules the Worker enforces and returns the
 /// JSON body to POST to `/v1/feedback`.
@@ -35,6 +35,46 @@ pub fn build_feedback_payload(
     serde_json::to_string(&feedback).map_err(|e| e.to_string())
 }
 
+/// One row of the caller's feedback, as the UI needs it.
+pub struct FeedbackItem {
+    pub id: String,
+    /// `bug` | `idea` | `praise` | `other`
+    pub category: String,
+    pub body: String,
+    pub route: String,
+    /// Seconds since epoch, UTC.
+    pub created_at: i64,
+}
+
+pub struct FeedbackPage {
+    pub items: Vec<FeedbackItem>,
+    /// Pass back as `?cursor=` for the next page; `None` on the last page.
+    pub next_cursor: Option<String>,
+}
+
+/// Parses the body of `GET /v1/feedback`. Decoding lives here, next to the
+/// encoding, so the wire format is defined once (`rust/shared`) and Dart
+/// never hand-parses JSON.
+#[flutter_rust_bridge::frb(sync)]
+pub fn parse_feedback_page(json: String) -> Result<FeedbackPage, String> {
+    let page: Page<Feedback> =
+        serde_json::from_str(&json).map_err(|_| "Unexpected response from the server.")?;
+    Ok(FeedbackPage {
+        items: page
+            .items
+            .into_iter()
+            .map(|f| FeedbackItem {
+                id: f.id,
+                category: f.category.as_str().to_string(),
+                body: f.body,
+                route: f.route,
+                created_at: f.created_at,
+            })
+            .collect(),
+        next_cursor: page.next_cursor,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -55,6 +95,24 @@ mod tests {
         let parsed: NewFeedback = serde_json::from_str(&json).unwrap();
         assert_eq!(parsed.category, FeedbackCategory::Idea);
         assert_eq!(parsed.body, "dark mode please");
+    }
+
+    #[test]
+    fn parses_a_page_from_the_worker() {
+        let json = r#"{"items":[{"id":"ab12","category":"bug","body":"x","route":"/",
+            "app_version":"1","platform":"ios","created_at":1700000000}],"next_cursor":"1700000000_ab12"}"#;
+        let page = parse_feedback_page(json.to_string()).unwrap();
+        assert_eq!(page.items.len(), 1);
+        assert_eq!(page.items[0].category, "bug");
+        assert_eq!(page.items[0].created_at, 1_700_000_000);
+        assert_eq!(page.next_cursor.as_deref(), Some("1700000000_ab12"));
+    }
+
+    #[test]
+    fn a_bad_response_is_an_error_not_a_panic() {
+        for bad in ["", "<html>", "{}", r#"{"items":[{"id":1}]}"#] {
+            assert!(parse_feedback_page(bad.to_string()).is_err(), "{bad}");
+        }
     }
 
     #[test]

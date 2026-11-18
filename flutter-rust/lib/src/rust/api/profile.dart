@@ -12,3 +12,34 @@ String buildProfilePayload({required String displayName}) => RustLib
     .instance
     .api
     .crateApiProfileBuildProfilePayload(displayName: displayName);
+
+/// Parses the body of `GET` / `PUT /v1/profile`.
+ProfileView parseProfile({required String json}) =>
+    RustLib.instance.api.crateApiProfileParseProfile(json: json);
+
+class ProfileView {
+  final String displayName;
+
+  /// Seconds since epoch, UTC.
+  final PlatformInt64 createdAt;
+  final PlatformInt64 updatedAt;
+
+  const ProfileView({
+    required this.displayName,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  @override
+  int get hashCode =>
+      displayName.hashCode ^ createdAt.hashCode ^ updatedAt.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProfileView &&
+          runtimeType == other.runtimeType &&
+          displayName == other.displayName &&
+          createdAt == other.createdAt &&
+          updatedAt == other.updatedAt;
+}

@@ -75,7 +75,7 @@ Read `docs/MASTER-SPEC.md` (pinned packages, idioms, gotchas) before generating 
 - **Routes are thin.** Typed `@TypedGoRoute<T>` classes in `lib/core/routing/routes.dart`; the `GoRouter` in `router.dart`. Screens in `features/<name>/presentation/` — no business logic in routes.
 - **One Riverpod provider per data dependency** in `features/<name>/application/`, `@riverpod`, wrapping an `ApiClient` call. Mutations: `state = await AsyncValue.guard(() => …)`. Inside methods after `build()`, `ref.read` only.
 - **Wire models are Rust structs** in `rust/shared` (`deny_unknown_fields`, no client-supplied `uid`/`id`/timestamps). Dart-only view models are freezed. Timestamps are integer seconds since epoch (UTC), set by D1 defaults — never client clocks, never ISO strings.
-- **Tokens, no magic values.** From `lib/core/design/tokens.dart` + `Theme.of(context)`.
+- **Kit first, tokens always.** Build screens from the component kit (`import 'package:app/core/ui/ui.dart'`): `AppButton`, `AsyncValueView` + state views (loading/empty/error/offline), `confirm` / `showMessage` / `showError`, `AppAvatar`. In feature code read style only from `Theme.of(context)`, `UiTokens.of(context)` and `Gap` — never a design system's own token classes, or the screen breaks when the system is switched.
 - **Dart strict** — no `dynamic`/untyped `Object` where a freezed/sealed type works; no `!` on data that came from the API.
 - **No premature abstraction** — extract a shared widget on the fourth similar screen, not the second.
 - **Build order (non-negotiable):** repository → provider → widget → route → analytics events.

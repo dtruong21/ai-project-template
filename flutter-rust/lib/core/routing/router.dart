@@ -29,7 +29,11 @@
 /// provider re-watches it, so the router rebuilds on sign-in / sign-out.
 library;
 
+import 'package:app/features/feedback/presentation/my_feedback_screen.dart';
+import 'package:app/features/gallery/gallery_screen.dart';
 import 'package:app/features/home/presentation/home_screen.dart';
+import 'package:app/features/settings/presentation/settings_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -49,6 +53,22 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/',
         builder: (context, state) => const HomeScreen(),
       ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
+        routes: [
+          GoRoute(
+            path: 'feedback',
+            builder: (context, state) => const MyFeedbackScreen(),
+          ),
+        ],
+      ),
+      // Debug-only: never registered in release builds.
+      if (kDebugMode)
+        GoRoute(
+          path: '/gallery',
+          builder: (context, state) => const GalleryScreen(),
+        ),
     ],
     // redirect: (context, state) {
     //   final isSignedIn = ref.read(authStateProvider).value != null;

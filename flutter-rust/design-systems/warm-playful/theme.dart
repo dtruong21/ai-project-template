@@ -14,6 +14,7 @@
 /// used for titles — Nunito carries weight well.
 library;
 
+import 'package:app/core/ui/ui_tokens.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -58,6 +59,10 @@ ThemeData buildWarmPlayfulTheme(Brightness brightness) {
       ? WarmPlayfulColorsLight.warning
       : WarmPlayfulColorsDark.warning;
 
+  // Text and icons ON the accent/danger fills. Dark brown in both modes:
+  // cream on coral is 2.2:1 (fails WCAG AA), brown on coral is 5.8:1.
+  const onAccent = WarmPlayfulColorsLight.text;
+
   final scheme =
       ColorScheme.fromSeed(
         seedColor: WarmPlayfulTokens.seed,
@@ -66,7 +71,7 @@ ThemeData buildWarmPlayfulTheme(Brightness brightness) {
         dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
       ).copyWith(
         primary: accent,
-        onPrimary: WarmPlayfulColorsLight.bg, // cream on coral reads well
+        onPrimary: onAccent,
         surface: surface,
         onSurface: text,
         surfaceContainerLowest: bg,
@@ -77,7 +82,7 @@ ThemeData buildWarmPlayfulTheme(Brightness brightness) {
         outline: border,
         outlineVariant: divider,
         error: danger,
-        onError: WarmPlayfulColorsLight.bg,
+        onError: onAccent,
         tertiary: success,
       );
 
@@ -183,7 +188,7 @@ ThemeData buildWarmPlayfulTheme(Brightness brightness) {
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: accent,
-        foregroundColor: WarmPlayfulColorsLight.bg,
+        foregroundColor: onAccent,
         elevation: 0,
         minimumSize: const Size(0, 48),
         padding: const EdgeInsets.symmetric(
@@ -193,16 +198,33 @@ ThemeData buildWarmPlayfulTheme(Brightness brightness) {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(WarmPlayfulRadius.md),
         ),
-        textStyle: textTheme.labelLarge?.copyWith(
-          color: WarmPlayfulColorsLight.bg,
-        ),
+        textStyle: textTheme.labelLarge?.copyWith(color: onAccent),
       ),
     ),
+    // FilledButton is the primary action in every design system (the
+    // component kit's AppButton primary variant uses it).
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: surface,
+        backgroundColor: accent,
+        foregroundColor: onAccent,
+        minimumSize: const Size(0, 48),
+        padding: const EdgeInsets.symmetric(
+          horizontal: WarmPlayfulSpacing.s5,
+          vertical: WarmPlayfulSpacing.s3,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(WarmPlayfulRadius.md),
+        ),
+        textStyle: textTheme.labelLarge,
+      ),
+    ),
+    // Without this, Material paints the label in the accent color: coral on
+    // cream is 2.2:1. Body text color keeps secondary actions readable.
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
         foregroundColor: text,
         minimumSize: const Size(0, 48),
+        side: BorderSide(color: border, width: 1.5),
         padding: const EdgeInsets.symmetric(
           horizontal: WarmPlayfulSpacing.s5,
           vertical: WarmPlayfulSpacing.s3,
@@ -253,9 +275,7 @@ ThemeData buildWarmPlayfulTheme(Brightness brightness) {
       backgroundColor: surface,
       selectedColor: accent,
       labelStyle: textTheme.bodySmall?.copyWith(color: text),
-      secondaryLabelStyle: textTheme.bodySmall?.copyWith(
-        color: WarmPlayfulColorsLight.bg,
-      ),
+      secondaryLabelStyle: textTheme.bodySmall?.copyWith(color: onAccent),
       side: BorderSide(color: border),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(WarmPlayfulRadius.pill),
@@ -299,6 +319,20 @@ ThemeData buildWarmPlayfulTheme(Brightness brightness) {
       },
     ),
     extensions: <ThemeExtension<dynamic>>[
+      // Contract with the component kit (lib/core/ui/) — keep in every system.
+      UiTokens(
+        success: success,
+        warning: warning,
+        danger: danger,
+        muted: muted,
+        radiusSm: WarmPlayfulRadius.sm,
+        radiusMd: WarmPlayfulRadius.md,
+        radiusLg: WarmPlayfulRadius.lg,
+        motionFast: WarmPlayfulMotion.fast,
+        motionNormal: WarmPlayfulMotion.normal,
+        motionSlow: WarmPlayfulMotion.slow,
+        motionCurve: WarmPlayfulMotion.easing,
+      ),
       WarmPlayfulExtensions(
         // Category palette
         peach: isLight

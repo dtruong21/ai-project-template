@@ -24,3 +24,72 @@ String buildFeedbackPayload({
   appVersion: appVersion,
   platform: platform,
 );
+
+/// Parses the body of `GET /v1/feedback`. Decoding lives here, next to the
+/// encoding, so the wire format is defined once (`rust/shared`) and Dart
+/// never hand-parses JSON.
+FeedbackPage parseFeedbackPage({required String json}) =>
+    RustLib.instance.api.crateApiFeedbackParseFeedbackPage(json: json);
+
+/// One row of the caller's feedback, as the UI needs it.
+class FeedbackItem {
+  final String id;
+
+  /// `bug` | `idea` | `praise` | `other`
+  final String category;
+  final String body;
+  final String route;
+
+  /// Seconds since epoch, UTC.
+  final PlatformInt64 createdAt;
+
+  const FeedbackItem({
+    required this.id,
+    required this.category,
+    required this.body,
+    required this.route,
+    required this.createdAt,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      category.hashCode ^
+      body.hashCode ^
+      route.hashCode ^
+      createdAt.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FeedbackItem &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          category == other.category &&
+          body == other.body &&
+          route == other.route &&
+          createdAt == other.createdAt;
+}
+
+class FeedbackPage {
+  final List<FeedbackItem> items;
+
+  /// Pass back as `?cursor=` for the next page; `None` on the last page.
+  final String? nextCursor;
+
+  const FeedbackPage({
+    required this.items,
+    this.nextCursor,
+  });
+
+  @override
+  int get hashCode => items.hashCode ^ nextCursor.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FeedbackPage &&
+          runtimeType == other.runtimeType &&
+          items == other.items &&
+          nextCursor == other.nextCursor;
+}

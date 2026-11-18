@@ -28,7 +28,7 @@ The template is **tuned for Claude Pro usage limits**. The rule that drives ever
 
 So routine work runs **in the main loop** by wearing a role "hat" — **not** by spawning a sub-agent per phase. A sub-agent is a fresh context that re-pays the whole tax (CLAUDE.md + role def + docs); on Pro that's expensive. The old design spawned one per phase; this one doesn't.
 
-- **A full 7-role agent roster lives in `.claude/agents/`** (`flutter-rust` adds rust-backend, security-auditor, perf-auditor, devops) — idea-validator, product-strategist, ux-designer, developer, qa-engineer, release-manager, marketer — but only **`qa-engineer` spawns by default** (`/test`, `/qa-sweep`; QA reads a lot, so isolation genuinely pays). The rest are **opt-in**: spawn one when the work is big enough to isolate (deep idea validation with web research, a whole-app design pass, a multi-feature build batch, a full launch-asset batch). Wide multi-file searches → the built-in **Explore** agent.
+- **A full 8-role agent roster lives in `.claude/agents/`** (`flutter-rust` adds rust-backend, security-auditor, perf-auditor, devops) — idea-validator, product-strategist, product-owner, ux-designer, developer, qa-engineer, release-manager, marketer — but only **`qa-engineer` spawns by default** (`/test`, `/qa-sweep`; QA reads a lot, so isolation genuinely pays). The rest are **opt-in**: spawn one when the work is big enough to isolate (deep idea validation with web research, a whole-app design pass, a multi-feature build batch, a full launch-asset batch). Wide multi-file searches → the built-in **Explore** agent.
 - **Everything else is a hat.** `/idea` `/spec` = strategist, `/design` = designer, `/build` = engineer, `/release` = release, `/aso` `/launch` = marketer. The hats' operating rules live in each stack's [`docs/PRINCIPLES.md`](react-native/docs/PRINCIPLES.md) § Role hats; each agent file mirrors its hat, so there's one source of truth.
 - **`CLAUDE.md` is the always-loaded tax** — kept deliberately short (~55 lines). The full standing rules moved to `docs/PRINCIPLES.md`, loaded on demand.
 
@@ -64,8 +64,8 @@ docs/PRINCIPLES.md     standing rules + role "hats" (on-demand)
 docs/WORKFLOWS.md      the 5-phase flow + 5 workflows
 docs/PRD.md            pillars + feature specs (the scope gate)
 docs/{TRACKING-PLAN,TEST-PLAN,RELEASE,LAUNCH,VERSIONING,SECURITY}.md
-.claude/agents/        7 role agents (idea-validator → marketer; only qa-engineer spawns by default)
-.claude/commands/      the 17 slash commands + README
+.claude/agents/        8 role agents (idea-validator → marketer; only qa-engineer spawns by default)
+.claude/commands/      the 19 slash commands + README
 design-systems/        3 swappable (notion-github, linear-minimal, warm-playful)
 ```
 Flutter also has `docs/MASTER-SPEC.md` — pinned packages, idioms, gotchas; the engineer hat reads it before writing code.

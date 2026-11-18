@@ -10,8 +10,10 @@ Type these in Claude Code to skip the long prompts. Each pre-fills context so yo
 |---|---|---|
 | `/idea <business idea>` | Validate before speccing — GO / PIVOT / KILL | strategist hat |
 | `/spec <name> — <idea>` | Write PRD entry, reject if not pillar-fit | strategist hat |
+| `/backlog [add <feature> — <idea> \| groom]` | Show, add to, or groom the ordered backlog; check Definition of Ready | product-owner hat |
 | `/design <screen>` | Design screen spec, append to DESIGN.md | designer hat |
 | `/build <feature>` | Implement: wrapper → hook → component → route | engineer hat |
+| `/accept <feature>` | Accept or reject the build against its acceptance criteria | product-owner hat |
 | `/test <feature>` | Tests + edge-case sweep, file bugs | **qa-engineer agent** |
 | `/release <staging\|production>` | Run checklist, print build commands | release hat |
 

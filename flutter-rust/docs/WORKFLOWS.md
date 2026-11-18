@@ -11,8 +11,10 @@ Every hat also exists as an **opt-in sub-agent** in `.claude/agents/` — spawn 
 ```
 /idea      strategist   →  validates it's worth building (GO/PIVOT/KILL)
 /spec      strategist   →  defines what + why       (docs/PRD.md)
+/backlog   product-owner →  readies + orders it      (docs/BACKLOG.md)
 /design    designer     →  defines how it looks      (docs/DESIGN.md)
 /build     engineer     →  implements + instruments  (code + tracked events)
+/accept    product-owner →  accepts against the story's criteria
 /test      qa-engineer  →  verifies (code+analytics) [SUB-AGENT]
 /release   release      →  ships the build via Codemagic
 /launch    marketer     →  launches it to the world  (parallel from T-4w)
@@ -39,10 +41,10 @@ Each phase's output feeds the next. Don't skip. If a later phase finds an earlie
 
 **Trigger:** new feature idea, user request, or backlog item.
 
-1. **Spec** — `/spec <name> — <idea>`. PRD entry: user story, acceptance criteria, edge cases, out of scope. Appended to `docs/PRD.md`. Bias to CUT.
+1. **Spec** — `/spec <name> — <idea>`. PRD entry: user story, acceptance criteria, edge cases, out of scope. Appended to `docs/PRD.md`. Bias to CUT. Then `/backlog` marks it `Ready` (product owner).
 2. **Design** — `/design <screen>`. Screen spec, widgets list, all states. Appended to `docs/DESIGN.md`. Mockup via Artifact only if the layout is non-obvious.
 3. **Build** — `/build <feature>`. Data slice via `/d1` (migration → `rust/shared` model → Worker route → `rust/core` payload builder) → Riverpod provider → widget → route, in that order. Types everything (Rust structs at the API boundary, freezed for Dart view models). Runs codegen. Instruments analytics. Tests happy path on iOS Simulator + Android Emulator.
-4. **QA** — `/test <feature>`. Spawns `qa-engineer`: widget tests for the provider + screen, edge-case sweep, bugs filed as `docs/bugs/<date>-<slug>.md`, test plan updated.
+4. **Accept, then QA** — `/accept <feature>` first (product owner: every acceptance criterion needs evidence; REJECT goes back to `/build`). Then `/test <feature>`. Spawns `qa-engineer`: widget tests for the provider + screen, edge-case sweep, bugs filed as `docs/bugs/<date>-<slug>.md`, test plan updated.
 5. **Loop** until P0/P1 bugs are clear. Then mark the PRD entry `shipped` and move on.
 
 **Hard rule:** don't start step N before step N-1 is done. New scope mid-build → run `/scope-check`, don't just absorb it.

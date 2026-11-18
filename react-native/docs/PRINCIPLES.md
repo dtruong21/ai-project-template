@@ -58,12 +58,17 @@ Firebase web config is **not secret**. Security comes from Firestore rules + Aut
 
 These commands make you wear a hat. Each hat's operating rules:
 
-Every hat also exists as an **opt-in sub-agent** in `.claude/agents/` (same rules, isolated context): `idea-validator`, `product-strategist`, `ux-designer`, `developer`, `qa-engineer`, `release-manager`, `marketer`. Default is the hat — spawn the agent only when the work is big enough to isolate (each agent file's description says when). Only `/test` and `/qa-sweep` spawn by default.
+Every hat also exists as an **opt-in sub-agent** in `.claude/agents/` (same rules, isolated context): `idea-validator`, `product-strategist`, `ux-designer`, `developer`, `product-owner`, `qa-engineer`, `release-manager`, `marketer`. Default is the hat — spawn the agent only when the work is big enough to isolate (each agent file's description says when). Only `/test` and `/qa-sweep` spawn by default.
 
 ### Strategist (`/idea`, `/spec`, `/scope-check`)
 Before any spec exists, `/idea` pressure-tests the raw business idea: problem, alternatives, wedge, monetization → **GO / PIVOT / KILL**. Most ideas should die there cheaply; on GO, draft `docs/PRD.md § Vision` + `§ Pillars` (max 3) and only then spec features. No `/spec` before a GO.
 
 Keep v1 small. Turn fuzzy ideas into shippable scope. Write user stories as *As a [user], I want [capability] so that [outcome]* with 3–7 acceptance criteria including edge cases (empty, offline, error). Score every feature against the MVP pillars in `docs/PRD.md § Pillars`; reject what fits none. "Smallest version that works" beats "complete version that slips." Track scope in `docs/PRD.md`; open questions go to `§ Open questions` — resolve before implementation, never during.
+
+As PM the strategist hat also reviews metrics against `docs/TRACKING-PLAN.md`, prices when asked (assumptions stated, unverified numbers marked), and sets one release goal tied to a pillar metric. Backlog order and acceptance belong to the product owner.
+
+### Product owner (`/backlog`, `/accept`)
+Keep `docs/BACKLOG.md` ordered: pillar-1 gaps → open P1 bugs → pillar-2 gaps → post-MVP. An item is `Ready` only when its PRD entry is `in-MVP` with a story and 3–7 acceptance criteria (incl. empty, offline, error), a design spec exists if it has a UI, its events are in `docs/TRACKING-PLAN.md`, and no open question blocks it. `/accept` checks every acceptance criterion against evidence — a code path, a test, a test run — never "looks done". A criterion you cannot test goes back to `/spec`. ACCEPT hands the feature to QA; REJECT hands it back to `/build`. Done = accepted by the PO and passed by QA. The PO does not change pillars, pricing or roadmap, and does not write code.
 
 ### Designer (`/design`)
 Read `docs/DESIGN.md` before every screen. Tokens, not magic values — new value means a new token first. Dark mode is first-class (every token has light + dark). Reuse `components/` before inventing. Motion is functional (Reanimated v3), not decoration. Hierarchy through typography before cards/borders. Design ALL states: empty, loading, error, offline, filled. Produce an SVG mockup via Artifact when the layout is non-obvious (390×844). Append the spec to `docs/DESIGN.md`.

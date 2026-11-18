@@ -35,9 +35,9 @@ firestore.rules   security model (deployed)
 
 Routine work runs **in the main loop** via slash commands — no sub-agent spawn, no re-paid context tax. Spawn a sub-agent only when isolation genuinely pays: `/test` and `/qa-sweep` (the `qa-engineer` agent reads a lot) and wide multi-file searches (the built-in **Explore** agent). The full role roster also exists as **opt-in agents** in `.claude/agents/` (idea-validator → marketer) — spawn one only for big isolatable work; default is the hat.
 
-Workflow: `/idea → /spec → /design → /build → /test → /release → /launch`. Each phase's output feeds the next; don't skip. If a later phase finds an earlier one wrong, fix it there. Full process: `docs/WORKFLOWS.md`.
+Workflow: `/idea → /spec → /design → /build → /test → /release → /launch`. Each phase's output feeds the next; don't skip. If a later phase finds an earlier one wrong, fix it there. Product-owner steps: `/backlog` readies a spec'd story; `/accept` checks the build against its criteria before `/test`. Full process: `docs/WORKFLOWS.md`.
 
-**Commands** — workflow: `/idea /spec /design /build /test /release` · micro: `/scope-check /bug /next /qa-sweep /weekly-review` · scaffold: `/firestore /hook /track` · release+marketing: `/bump /aso /launch`. Index: `.claude/commands/README.md`. **Prefer commands over re-typing prompts.**
+**Commands** — workflow: `/idea /spec /backlog /design /build /accept /test /release` · micro: `/scope-check /bug /next /qa-sweep /weekly-review` · scaffold: `/firestore /hook /track` · release+marketing: `/bump /aso /launch`. Index: `.claude/commands/README.md`. **Prefer commands over re-typing prompts.**
 
 **Output discipline:** no preambles or end-of-turn recaps; report file paths, not code dumps; ask a cheap question before wide exploration; `Read` known paths, `Grep`/`Glob` for symbols — don't read whole folders.
 

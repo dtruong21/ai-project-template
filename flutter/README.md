@@ -10,7 +10,7 @@ A starting point for solo-built mobile MVPs. Ships the Claude Code config, docs 
 
 | Layer | Content |
 |---|---|
-| **Claude config** | 7-role agent roster (idea-validator, product-strategist, ux-designer, developer, qa-engineer, release-manager, marketer) + 17 slash commands. Roles run **in the main loop as "hats"** (`docs/PRINCIPLES.md § Role hats`) by default — only `qa-engineer` spawns automatically; the rest are opt-in for big isolatable work. Tuned for Claude Pro usage limits. |
+| **Claude config** | 8-role agent roster (idea-validator, product-strategist, product-owner, ux-designer, developer, qa-engineer, release-manager, marketer) + 19 slash commands. Roles run **in the main loop as "hats"** (`docs/PRINCIPLES.md § Role hats`) by default — only `qa-engineer` spawns automatically; the rest are opt-in for big isolatable work. Tuned for Claude Pro usage limits. |
 | **Workflow** | Strict idea → spec → design → build → test → release pipeline with handoff rules |
 | **Design system family** | 3 cross-platform pre-built systems: `notion-github`, `linear-minimal`, `warm-playful`. Pick one per project during setup. |
 | **Analytics layer** | Tracking plan (`docs/TRACKING-PLAN.md`) + typed event registry + provider-agnostic client. `/track` keeps the doc and types in sync. |
@@ -72,8 +72,8 @@ If you're considering a different backend (Supabase, custom Dart server, etc.), 
 
 ```
 .claude/
-  agents/          7 role agents (idea-validator → marketer) — only qa-engineer spawns by default
-  commands/        17 slash commands (workflow + micro-tasks + scaffolds + marketing)
+  agents/          8 role agents (idea-validator → marketer) — only qa-engineer spawns by default
+  commands/        19 slash commands (workflow + micro-tasks + scaffolds + marketing)
 design-systems/    3 pre-built systems (pick one in SETUP.md Step 3.5)
   notion-github/   tokens.dart + theme.dart + DESIGN.md + mood.svg
   linear-minimal/  ...
@@ -140,4 +140,4 @@ This template has a React Native sibling — same workflow, same main-loop "hats
 
 Use the RN sibling for projects where rapid web parity, JS-ecosystem tooling, or existing React skills tip the trade-off. Use this Flutter template for projects where native UI fidelity, strict typing through the data layer (freezed), and Material 3 are the better fit.
 
-Both templates share the same Firebase model, the same role "hats" + 7-role agent roster (with stack-specific deltas), and the same `/idea → /spec → /design → /build → /test → /release` workflow — so cross-referencing patterns between them is cheap.
+Both templates share the same Firebase model, the same role "hats" + 8-role agent roster (with stack-specific deltas), and the same `/idea → /spec → /design → /build → /test → /release` workflow — so cross-referencing patterns between them is cheap.

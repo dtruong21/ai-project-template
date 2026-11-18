@@ -18,7 +18,7 @@
 # needs, before `flutter build`: the Rust toolchain with mobile targets
 # (rustup target add aarch64-apple-ios aarch64-linux-android ...), and
 # `cargo install flutter_rust_bridge_codegen && flutter_rust_bridge_codegen generate`
-# unless you commit lib/src/rust/. Not wired below yet — add when you set up CI.
+# only if lib/src/rust/ is stale (it is committed). Not wired below yet — add when you set up CI.
 # The Worker (rust/api) is deployed with `wrangler deploy`, not by Codemagic.
 #
 # Gotcha (master spec §5): Codemagic caches the Flutter SDK aggressively.
@@ -200,7 +200,7 @@ workflows:
 
   # ─────────────────────────────────────────────────────────────────────
   # Web — optional, deploy to Firebase Hosting or Cloudflare Pages.
-  # The host MUST send COOP/COEP headers (see SETUP.md Step 5.5 → Web).
+  # The host MUST send COOP/COEP headers (see SETUP.md "More platforms" → Web).
   # ─────────────────────────────────────────────────────────────────────
   web_release:
     name: Web release

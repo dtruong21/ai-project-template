@@ -4,7 +4,7 @@ A starting point for solo-built MVPs on iOS, Android, web, macOS and Windows. Sh
 
 **Stack:** Flutter UI + Rust logic (flutter_rust_bridge) + Rust API on Cloudflare Workers + D1 + R2. Firebase kept for Auth and push only. Riverpod (AsyncNotifier) + go_router + freezed + Material 3.
 
-> **Status (2026-11-12): backend verified locally, app integration not yet.** Verified with cargo 1.100, worker 0.9, jsonwebtoken 11, flutter_rust_bridge 2.13, wrangler 4.161: `rust/shared` and `rust/core` tests pass; `rust/api` builds to wasm (~865 KB) and, run under `wrangler dev` with a local D1, accepts a correctly signed token and rejects missing, malformed, expired, wrong-audience, wrong-issuer and tampered ones. **Platforms:** iOS, Android, web, macOS, Windows are wired in SETUP, `codemagic.yaml` and the docs, but none of the desktop or web steps have been run — this Mac had no Rust toolchain. Known gaps: the Worker has no CORS handling (web needs it), web hosting must send COOP/COEP headers, `firebase_auth` is beta on macOS/Windows and `firebase_messaging` has no Windows support. Linux is out (no Firebase Auth). **Not verified:** SETUP Step 5.5 (`flutter_rust_bridge_codegen integrate` on a real Flutter project), the Flutter app building and calling the API, token verification against Google's live keys, and `wrangler deploy`. Update this note after your first full setup.
+> **Status (2026-11-12): runs out of the box; signed-in path needs your Firebase project.** This stack is a complete app, not an overlay. Verified on an iOS simulator: it builds with the Rust library, the bridge loads, the API health check passes, and Rust validation reaches the UI; Flutter, `rust/shared` and `rust/core` tests pass; the API end-to-end test (`rust/api/tests/api_test.py`, 60 checks) passes: every route, ten kinds of forged token, paging, cross-user isolation, account deletion. **Not verified:** the signed-in round trip with a real Firebase project, Android builds, physical devices, `wrangler deploy`, Codemagic. **Platforms:** iOS and Android projects are included. Web, macOS and Windows are described in `SETUP.md` ("More platforms"), `codemagic.yaml` and the docs, but their folders are not generated and none of those steps have been run. Known gaps there: the Worker has no CORS handling (web needs it), web hosting must send COOP/COEP headers, `firebase_auth` is beta on macOS/Windows and `firebase_messaging` has no Windows support. Linux is out (no Firebase Auth). Details at the end of `SETUP.md`.
 
 ---
 
@@ -17,7 +17,7 @@ A starting point for solo-built MVPs on iOS, Android, web, macOS and Windows. Sh
 | **Design system family** | 3 cross-platform pre-built systems: `notion-github`, `linear-minimal`, `warm-playful`. Pick one per project during setup. |
 | **Analytics layer** | Tracking plan (`docs/TRACKING-PLAN.md`) + typed event registry + provider-agnostic client. `/track` keeps the doc and types in sync. |
 | **Feedback loop** | In-app feedback as the full reference slice: Rust validation → Worker route → D1 table + `feedback_submitted` event. |
-| **Rust workspace** | `rust/shared` (models + validation, tested), `rust/api` (Worker: Firebase token check, D1), `rust/core` (app-side payload builders). `/d1` scaffolds new slices. |
+| **Rust workspace** | `rust/shared` (models, validation, error envelope, paging — tested), `rust/api` (Worker: Firebase token check with cached keys; feedback create/list/delete, profile get/put, account deletion on D1; end-to-end test script), `rust/core` (app-side payload builders). `/d1` scaffolds new slices. |
 | **Launch playbook** | Marketer hat + `LAUNCH.md` runbook + `/aso` + `/launch <channel>` commands. |
 | **Solo-dev forcing functions** | `/weekly-review` Monday checkpoint, energy check, burnout flagging. |
 | **Docs scaffolding** | PRD, Workflows, Tracking plan, Test plan, Roadmap, Release runbook, Launch playbook, Security, Store metadata, Legal templates |
@@ -28,7 +28,7 @@ A starting point for solo-built MVPs on iOS, Android, web, macOS and Windows. Sh
 
 ## How to use it
 
-Read [`SETUP.md`](SETUP.md) end-to-end. It walks you through copying the template, generating the Flutter project on top, filling placeholders, integrating the Rust bridge, and getting Cloudflare + Firebase Auth wired up.
+Read [`SETUP.md`](SETUP.md). Steps 1–2 create the project and run it (app + local API) with nothing else to configure; the rest connects Firebase Auth, renames it, and deploys.
 
 Once instantiated, the development loop is:
 
@@ -82,7 +82,7 @@ If the app is chat-like, offline-first, or you want the fastest possible MVP, us
 .claude/
   agents/          12 agents (8 roles idea-validator → marketer + 4 stack agents) — only qa-engineer spawns by default
   commands/        19 slash commands (workflow + micro-tasks + scaffolds + marketing)
-design-systems/    3 pre-built systems (pick one in SETUP.md Step 3.5)
+design-systems/    3 pre-built systems (pick one in SETUP.md Step 5)
   notion-github/   tokens.dart + theme.dart + DESIGN.md + mood.svg
   linear-minimal/  ...
   warm-playful/    ...
@@ -116,11 +116,14 @@ lib/
 rust/
   Cargo.toml       workspace (shared + api)
   shared/          models + validation — used by core and api
-  core/            app-side Rust exposed to Dart (crate created in SETUP Step 5)
+  core/            app-side Rust exposed to Dart (compiled into the app)
   api/             Cloudflare Worker — src/, migrations/, wrangler.toml
-integration_test/  E2E golden-path flows
+android/, ios/     native projects (bundle id com.example.app — rename in SETUP Step 4)
+rust_builder/      cargokit glue that compiles rust/core during `flutter build` (generated)
+test/              widget tests
+pubspec.yaml       Dart package `app`
 scripts/
-  pick-design-system.sh   one-shot picker (Step 3.5)
+  pick-design-system.sh   one-shot picker (Step 5)
 .fvmrc             Flutter SDK pin
 analysis_options.yaml   very_good_analysis + custom_lint
 codemagic.yaml     CI workflows

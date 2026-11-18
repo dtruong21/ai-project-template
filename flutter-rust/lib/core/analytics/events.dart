@@ -92,9 +92,9 @@ final class FeedbackSubmitted extends AppEvent {
 
   @override
   Map<String, Object?> get props => {
-        'category': category,
-        'length_chars': lengthChars,
-      };
+    'category': category,
+    'length_chars': lengthChars,
+  };
 }
 
 // ─── Project-specific events (extend below — keep this section growing) ──────
@@ -136,9 +136,9 @@ class UserProperties {
   final String? platform; // 'ios' | 'android' | 'web'
 
   Map<String, Object?> toMap() => {
-        if (signupDate != null) 'signup_date': signupDate,
-        if (signupMethod != null) 'signup_method': signupMethod!.name,
-        if (appVersion != null) 'app_version': appVersion,
-        if (platform != null) 'platform': platform,
-      };
+    if (signupDate != null) 'signup_date': signupDate,
+    if (signupMethod != null) 'signup_method': signupMethod!.name,
+    if (appVersion != null) 'app_version': appVersion,
+    if (platform != null) 'platform': platform,
+  };
 }

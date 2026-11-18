@@ -1,0 +1,46 @@
+# CI for a project created from this template (it lives at the project root
+# there). UNVERIFIED: written without being run on GitHub Actions — expect to
+# adjust on the first push.
+#
+# Runs the same three Rust checks you run locally. Flutter build/test is left
+# to Codemagic (codemagic.yaml).
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  rust-and-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Rust toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup target add wasm32-unknown-unknown
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+            rust/target
+            rust/core/target
+          key: cargo-${{ runner.os }}-${{ hashFiles('rust/Cargo.lock', 'rust/core/Cargo.lock') }}
+      - name: Shared rules
+        run: cargo test -p shared
+        working-directory: rust
+      - name: App-side payload builders
+        run: cargo test
+        working-directory: rust/core
+      - name: No hand-built SQL in the Worker
+        run: "! grep -rn 'format!' rust/api/src/"
+      - name: API end-to-end (local Worker + temporary D1)
+        run: python3 tests/api_test.py
+        working-directory: rust/api

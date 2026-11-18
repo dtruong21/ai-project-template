@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # pick-design-system.sh — copies the chosen design system into the project,
-# then removes the rest. Run this once during SETUP.md Step 3.5.
+# then removes the rest. Run this once during SETUP.md Step 5.
 #
 # Usage:
 #   ./scripts/pick-design-system.sh notion-github

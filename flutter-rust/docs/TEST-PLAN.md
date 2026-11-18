@@ -22,7 +22,7 @@ The pyramid for this template — write the cheap ones first, fall back to the e
 |---|---|---|---|
 | **Unit** | `flutter_test` | Pure Dart | Notifier logic with a fake `apiClientProvider`, pure functions |
 | **Rust unit** | `cargo test` (`rust/`, `rust/core/`) | Native | Validation rules in `shared`, payload builders in `core` |
-| **API smoke** | `wrangler dev` + `curl` | Local Worker + local D1 | Auth (401), validation (422), cross-user access (404) |
+| **API end-to-end** | `python3 rust/api/tests/api_test.py` | Local Worker + temporary D1, self-signed test tokens | Every route: auth (401 incl. forged/expired/tampered tokens), validation (422), bad input (400), paging, cross-user access (404), account deletion |
 | **Widget** | `flutter_test` + `ProviderScope` test harness (`test/helpers/pump_app.dart`) | Flutter test renderer | Single screen / widget behavior, state transitions, golden path of a feature |
 | **Golden** | `flutter_test` (`matchesGoldenFile`) | Flutter test renderer | Visual regressions on key screens — run on one host platform only (CI matrix pinned) |
 | **Integration** | `integration_test` package | Real simulator/emulator | End-to-end golden flows (sign-in, create-first-thing, etc.) |
@@ -66,7 +66,7 @@ Failure modes that bite mobile + Firebase apps regardless of feature:
 
 - [ ] Anonymous → real-account linking preserves uid + data.
 - [ ] Sign-out clears all local state (Riverpod providers invalidated, in-memory caches dropped).
-- [ ] Account deletion cascade leaves zero orphan docs.
+- [ ] Account deletion leaves zero rows for that uid — every table with a `uid` column is listed in `rust/api/src/account.rs` and covered in `api_test.py`.
 - [ ] Token refresh works after 1h+ idle.
 
 ### Permissions

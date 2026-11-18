@@ -15,8 +15,8 @@
 /// with a duration from `WarmPlayfulMotion`.
 library;
 
-import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/physics.dart' show SpringSimulation;
 
 /// All raw tokens for the Warm Playful design system.
 ///

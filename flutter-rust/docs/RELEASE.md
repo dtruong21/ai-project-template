@@ -105,6 +105,7 @@ Always before cutting the app build — a new app must never meet an old API. Ke
 ```bash
 (cd rust && cargo test)                 # shared validation rules
 (cd rust/core && cargo test)            # app-side payload builders
+(cd rust/api && python3 tests/api_test.py)   # every route, forged tokens, cross-user access
 cd rust/api
 npx wrangler d1 migrations apply DB --remote
 npx wrangler deploy
@@ -112,7 +113,7 @@ curl https://<your-worker-url>/health   # expect: ok
 cd ../..
 ```
 
-The Workers free plan covers early testing; the paid plan ($5/month base) lifts the daily request cap. Account-deletion must delete the user's D1 rows — add a `DELETE /v1/account` route before store submission.
+The Workers free plan covers early testing; the paid plan ($5/month base) lifts the daily request cap. Account deletion: `DELETE /v1/account` erases the caller's rows in every table listed in `rust/api/src/account.rs`; the app then deletes the Firebase user. Stores require this to be reachable in-app — build the settings entry before submission.
 
 ---
 

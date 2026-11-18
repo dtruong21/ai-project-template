@@ -7,7 +7,6 @@
 // Single source of truth. Components import from here — no magic values.
 // Mirrors the RN sibling at design-systems/linear-minimal/tokens.ts.
 
-import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 
 /// Surface, text, accent, and semantic colors for light and dark.

@@ -28,14 +28,12 @@
 ///   - `lib/src/rust/api/feedback.dart` → `flutter_rust_bridge_codegen generate`
 library;
 
+import 'package:app/core/analytics/client.dart';
+import 'package:app/core/analytics/events.dart';
+import 'package:app/core/api/api_client.dart';
+import 'package:app/src/rust/api/feedback.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-import '../../core/analytics/client.dart';
-import '../../core/analytics/events.dart';
-import '../../core/api/api_client.dart';
-import '../../src/rust/api/feedback.dart';
 
 part 'feedback_provider.g.dart';
 
@@ -79,9 +77,11 @@ class FeedbackSubmission extends _$FeedbackSubmission {
 
     if (state.hasError) return;
 
-    await track(FeedbackSubmitted(
-      category: input.category.name,
-      lengthChars: input.body.length,
-    ));
+    await track(
+      FeedbackSubmitted(
+        category: input.category.name,
+        lengthChars: input.body.length,
+      ),
+    );
   }
 }

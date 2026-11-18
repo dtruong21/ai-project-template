@@ -50,7 +50,7 @@ for i in $(seq 200); do
 done | sort -n | awk '{a[NR]=$1} END {print "p50", a[int(NR*0.5)], "p95", a[int(NR*0.95)]}'
 ```
 
-Worker CPU time per request: Cloudflare dashboard → Workers → your Worker → Metrics. Known cost in the starter: `auth.rs` fetches Google's signing keys on every request — cache them if p50 is dominated by that fetch.
+Worker CPU time per request: Cloudflare dashboard → Workers → your Worker → Metrics. `auth.rs` caches Google's signing keys per isolate for an hour, so only the first request on a cold isolate pays that fetch — expect an occasional slow outlier, not a slow p50.
 
 ## 6. Run cost
 

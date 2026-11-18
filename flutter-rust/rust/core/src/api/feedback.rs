@@ -1,8 +1,7 @@
 //! App-side Rust, called from Dart through flutter_rust_bridge.
 //!
-//! This file is shipped by the template; the rest of the `core` crate
-//! (Cargo.toml, lib.rs, frb_generated.rs) is created by
-//! `flutter_rust_bridge_codegen integrate` — see SETUP.md Step 5.
+//! After changing anything here: `flutter_rust_bridge_codegen generate`,
+//! then fully restart the app (hot reload does not reload Rust).
 //!
 //! Rule for this crate: logic and data shaping only. No UI, no HTTP — Dart
 //! owns the network call (`lib/core/api/api_client.dart`) so the app does not

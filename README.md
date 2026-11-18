@@ -37,7 +37,7 @@ The helper copies the chosen stack, detaches the template's git history, and sta
 
 | Layer | What's in it |
 |---|---|
-| **Claude config** | 7-role agent roster (idea-validator → marketer) + 17 slash commands. Roles run in the main loop as "hats" (`docs/PRINCIPLES.md`) by default — only `qa-engineer` spawns automatically; the rest are opt-in for big isolatable work. Tuned for Claude Pro. |
+| **Claude config** | 7-role agent roster (idea-validator → marketer; `flutter-rust` adds 4 stack agents) + 17 slash commands. Roles run in the main loop as "hats" (`docs/PRINCIPLES.md`) by default — only `qa-engineer` spawns automatically; the rest are opt-in for big isolatable work. Tuned for Claude Pro. |
 | **Workflow** | Strict `/idea → /spec → /design → /build → /test → /release → /launch` pipeline, main-loop phases documented in `docs/WORKFLOWS.md` |
 | **Design system family** | 3 swappable: `notion-github`, `linear-minimal`, `warm-playful`. Pick one per project via `scripts/pick-design-system.sh`. |
 | **Analytics layer** | Tracking plan + typed event registry (TS for RN / Dart sealed class for Flutter) + provider-agnostic client. |

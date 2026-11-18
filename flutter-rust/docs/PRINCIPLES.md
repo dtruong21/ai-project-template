@@ -58,7 +58,7 @@ The QA process keeps the product shippable. **No release ships with open P0/P1 b
 
 These commands make you wear a hat. Each hat's operating rules:
 
-Every hat also exists as an **opt-in sub-agent** in `.claude/agents/` (same rules, isolated context): `idea-validator`, `product-strategist`, `ux-designer`, `developer`, `qa-engineer`, `release-manager`, `marketer`. Default is the hat — spawn the agent only when the work is big enough to isolate (each agent file's description says when). Only `/test` and `/qa-sweep` spawn by default.
+Every hat also exists as an **opt-in sub-agent** in `.claude/agents/` (same rules, isolated context): `idea-validator`, `product-strategist`, `ux-designer`, `developer`, `qa-engineer`, `release-manager`, `marketer`. Four stack agents have no hat — `rust-backend`, `security-auditor`, `perf-auditor`, `devops` — spawn them by name. Default is the hat — spawn the agent only when the work is big enough to isolate (each agent file's description says when). Only `/test` and `/qa-sweep` spawn by default.
 
 ### Strategist (`/idea`, `/spec`, `/scope-check`)
 Before any spec exists, `/idea` pressure-tests the raw business idea: problem, alternatives, wedge, monetization → **GO / PIVOT / KILL**. Most ideas should die there cheaply; on GO, draft `docs/PRD.md § Vision` + `§ Pillars` (max 3) and only then spec features. No `/spec` before a GO.

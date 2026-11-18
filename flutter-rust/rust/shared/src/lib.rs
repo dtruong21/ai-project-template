@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod api;
 pub mod profile;
+// modules: shared
 
 pub use api::{codes, page_size, ApiError, ApiErrorBody, Cursor, Page};
 pub use profile::{Profile, ProfileUpdate};

@@ -111,7 +111,7 @@ For self-hosted CI (Gitea Actions / GitHub Actions): use repo secrets, reference
 
 {{PROJECT_NAME}} stores personal user data — not financial, not health-protected, not regulated. The threat model is: a malicious user trying to read/write *another user's* data. Mitigated by Firebase Auth + the Worker's per-route token check and uid-scoped queries. A leaked Firebase web config or D1 database id doesn't change the model. A leaked Cloudflare API token, Worker secret, or signing key WOULD — those are the actual secrets, and they live with Cloudflare / Codemagic, not in this repo.
 
-Account deletion (`DELETE /v1/account`) erases every table listed in `rust/api/src/account.rs` in one transaction; a new table with a `uid` column must be added there.
+Account deletion (`DELETE /v1/account`) erases every table listed in `rust/api/src/account.rs` in one transaction; a new table with a `uid` column must be added there. Anything stored outside D1 (the files module's R2 objects) is deleted first in the `before-delete` hook, so a failure leaves nothing half-deleted. User-uploaded files are the riskiest input in the system: read `modules/files/README.md` "Security properties" before changing the allowlist or how files are served.
 
 Known gaps in the starter, to close before real traffic: no rate limiting on routes (add Cloudflare rate-limiting rules or Turnstile on abuse-prone endpoints); no App Check equivalent, so a valid user can call the API from outside the app (acceptable — the API only ever exposes that user's own data).
 

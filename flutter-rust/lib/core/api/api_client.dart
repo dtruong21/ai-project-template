@@ -13,6 +13,7 @@
 library;
 
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:app/core/api/api_exception.dart';
 import 'package:app/core/bootstrap.dart';
@@ -54,8 +55,40 @@ class ApiClient {
   /// `DELETE`. Completes normally on any 2xx.
   Future<void> delete(String path) => _send('DELETE', path);
 
-  /// Throws an [ApiException] on any failure; never returns a non-2xx body.
-  Future<String> _send(String method, String path, [String? jsonBody]) async {
+  /// `POST` raw bytes (an upload). Returns the response body (JSON text).
+  Future<String> postBytes(
+    String path,
+    Uint8List bytes, {
+    String contentType = 'application/octet-stream',
+  }) async => (await _request(
+    'POST',
+    path,
+    bodyBytes: bytes,
+    contentType: contentType,
+  )).body;
+
+  /// `GET` raw bytes (a download). Needs the auth header, so it cannot be an
+  /// `Image.network` URL — fetch here and use `Image.memory`.
+  Future<Uint8List> getBytes(String path) async =>
+      (await _request('GET', path)).bodyBytes;
+
+  /// Text-bodied request (JSON). Returns the response body.
+  Future<String> _send(String method, String path, [String? jsonBody]) async =>
+      (await _request(
+        method,
+        path,
+        bodyText: jsonBody,
+        contentType: jsonBody == null ? null : 'application/json',
+      )).body;
+
+  /// Throws an [ApiException] on any failure; never returns a non-2xx response.
+  Future<http.Response> _request(
+    String method,
+    String path, {
+    String? bodyText,
+    Uint8List? bodyBytes,
+    String? contentType,
+  }) async {
     final http.Response response;
     try {
       final token = await _token();
@@ -63,11 +96,9 @@ class ApiClient {
 
       final request = http.Request(method, Uri.parse('$_baseUrl$path'))
         ..headers['Authorization'] = 'Bearer $token';
-      if (jsonBody != null) {
-        request
-          ..headers['Content-Type'] = 'application/json'
-          ..body = jsonBody;
-      }
+      if (contentType != null) request.headers['Content-Type'] = contentType;
+      if (bodyText != null) request.body = bodyText;
+      if (bodyBytes != null) request.bodyBytes = bodyBytes;
       response = await http.Response.fromStream(
         await _http.send(request).timeout(_timeout),
       );
@@ -85,7 +116,7 @@ class ApiClient {
         response.body,
       );
     }
-    return response.body;
+    return response;
   }
 
   /// `GET /health` — the one unauthenticated route. Never throws.

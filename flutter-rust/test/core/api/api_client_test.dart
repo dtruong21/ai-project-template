@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:app/core/api/api_client.dart';
 import 'package:app/core/api/api_exception.dart';
@@ -115,4 +116,50 @@ void main() {
       expect(await client.isReachable(), isFalse);
     },
   );
+
+  test('postBytes sends raw bytes with the given content type', () async {
+    late http.Request seen;
+    final client = _client((request) async {
+      seen = request;
+      return http.Response('{"id":"x"}', 201);
+    });
+
+    final body = await client.postBytes(
+      '/v1/files?name=a.png',
+      Uint8List.fromList([1, 2, 3]),
+      contentType: 'image/png',
+    );
+
+    expect(body, '{"id":"x"}');
+    expect(seen.method, 'POST');
+    expect(seen.bodyBytes, [1, 2, 3]);
+    expect(seen.headers['Content-Type'], startsWith('image/png'));
+    expect(seen.headers['Authorization'], 'Bearer test-token');
+  });
+
+  test('getBytes returns the body bytes untouched', () async {
+    final client = _client(
+      (request) async => http.Response.bytes([0, 255, 128, 7], 200),
+    );
+    expect(await client.getBytes('/v1/files/x'), [0, 255, 128, 7]);
+  });
+
+  test('getBytes maps a 404 to a typed exception', () async {
+    final client = _client(
+      (request) async => http.Response(
+        '{"error":{"code":"not_found","message":"Not found."}}',
+        404,
+      ),
+    );
+    await expectLater(
+      client.getBytes('/v1/files/x'),
+      throwsA(
+        isA<ApiResponseException>().having(
+          (e) => e.isNotFound,
+          'isNotFound',
+          true,
+        ),
+      ),
+    );
+  });
 }

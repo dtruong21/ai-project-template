@@ -12,7 +12,7 @@ A starting point for solo-built MVPs on iOS, Android, web, macOS and Windows. Sh
 
 | Layer | Content |
 |---|---|
-| **Claude config** | 7-role agent roster (idea-validator, product-strategist, ux-designer, developer, qa-engineer, release-manager, marketer) + 17 slash commands. Roles run **in the main loop as "hats"** (`docs/PRINCIPLES.md § Role hats`) by default — only `qa-engineer` spawns automatically; the rest are opt-in for big isolatable work. Tuned for Claude Pro usage limits. |
+| **Claude config** | 12-agent roster (the 8 roles idea-validator, product-strategist, product-owner, ux-designer, developer, qa-engineer, release-manager, marketer, plus the stack agents rust-backend, security-auditor, perf-auditor, devops) + 19 slash commands. Roles run **in the main loop as "hats"** (`docs/PRINCIPLES.md § Role hats`) by default — only `qa-engineer` spawns automatically; the rest are opt-in for big isolatable work. Tuned for Claude Pro usage limits. |
 | **Workflow** | Strict idea → spec → design → build → test → release pipeline with handoff rules |
 | **Component kit + gallery** | `lib/core/ui/`: button (4 variants, loading), loading/empty/error/offline state views, `AsyncValueView`, confirm dialogs, snackbars, avatar — all driven by `UiTokens`, so they restyle with the design system. Debug-only gallery screen shows every component in every state, light and dark. Starter screens built with it: settings, profile edit, my feedback (paged, delete), delete account. |
 | **Design system family** | 3 cross-platform pre-built systems: `notion-github`, `linear-minimal`, `warm-playful`. Pick one per project during setup. |
@@ -81,8 +81,8 @@ If the app is chat-like, offline-first, or you want the fastest possible MVP, us
 
 ```
 .claude/
-  agents/          7 role agents (idea-validator → marketer) — only qa-engineer spawns by default
-  commands/        17 slash commands (workflow + micro-tasks + scaffolds + marketing)
+  agents/          12 agents (8 roles idea-validator → marketer + 4 stack agents) — only qa-engineer spawns by default
+  commands/        19 slash commands (workflow + micro-tasks + scaffolds + marketing)
 design-systems/    3 pre-built systems (pick one in SETUP.md Step 5)
   notion-github/   tokens.dart + theme.dart + DESIGN.md + mood.svg
   linear-minimal/  ...
@@ -158,4 +158,4 @@ Same workflow, same main-loop "hats", same docs structure, different stack — a
 - **`flutter/`** — Flutter + Firebase (Firestore, Functions). Fastest path to an MVP; offline sync and realtime built in.
 - **`react-native/`** — Expo + Firebase. JS ecosystem, web parity.
 
-The role "hats", the 7-role agent roster, and the `/idea → /spec → /design → /build → /test → /release` workflow are shared, so cross-referencing patterns between them is cheap. Only the data layer differs: here it is `/d1` + Worker routes instead of `/firestore` + security rules.
+The role "hats", the 8-role agent roster (this stack adds 4 more), and the `/idea → /spec → /design → /build → /test → /release` workflow are shared, so cross-referencing patterns between them is cheap. Only the data layer differs: here it is `/d1` + Worker routes instead of `/firestore` + security rules.

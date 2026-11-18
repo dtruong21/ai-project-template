@@ -1,6 +1,6 @@
 ---
 name: qa-engineer
-description: Use to write tests, find bugs, reproduce issues, and verify features work on iOS and Android before release. The only agent in the roster spawned by default — via `/test` and `/qa-sweep`, because QA reads a lot and isolation keeps that out of the main loop. Invoke after a feature is built (`/build`), when a bug report comes in, or before any release. Owns the test plan and the bug triage.
+description: Use to write tests, find bugs, reproduce issues, and verify features work on every shipped platform (iOS, Android, web, macOS, Windows) before release. The only agent in the roster spawned by default — via `/test` and `/qa-sweep`, because QA reads a lot and isolation keeps that out of the main loop. Invoke after a feature is built (`/build`), when a bug report comes in, or before any release. Owns the test plan and the bug triage.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch
 model: sonnet
 ---
@@ -71,7 +71,7 @@ File bugs as markdown at `docs/bugs/<YYYY-MM-DD>-<slug>.md`. Closed bugs move to
 For each feature, write these:
 
 1. **Widget tests** (`test/features/<name>/presentation/<name>_screen_test.dart`) — render in all states (empty / loading / error / filled). Use the `pumpApp` helper at `test/helpers/pump_app.dart` to wrap in `ProviderScope` with overrides. Assert on `Semantics` labels and visible text, not on internal structure.
-2. **Provider tests** (`test/features/<name>/application/<name>_provider_test.dart`) — happy path + error + loading. Override the repository with a `mocktail` mock. Register fallback values in `setUpAll` for non-primitive matchers.
+2. **Provider tests** (`test/features/<name>/application/<name>_provider_test.dart`) — happy path + error + loading. Override `apiClientProvider` with a `mocktail` fake. Register fallback values in `setUpAll` for non-primitive matchers.
 3. **Rust tests** (`cargo test` in `rust/` and `rust/core/`) — every validation rule in `rust/shared` (one valid case, one per rejection, smuggled `uid` rejected) and every `build_*_payload` round-trip. Dart side: `ApiClient` consumers tested with a fake `apiClientProvider` override.
 4. **Pure-function tests** (`test/features/<name>/domain/<name>_test.dart`) — for any computation (math, formatting, parsing, date math). Test DST + timezone edge cases here.
 5. **Golden tests** (`test/goldens/<name>_golden_test.dart`) via `golden_toolkit` — both light and dark themes, both iOS and Android device sizes. Re-baseline with `flutter test --update-goldens` only when the visual change is intentional.
@@ -94,6 +94,7 @@ Before signing off for release (`/release`):
 - [ ] Network: feature still works on Slow-3G throttle
 - [ ] **Analytics: every new event in `docs/TRACKING-PLAN.md` (since last release) verified in PostHog debug view** and in the Firebase Analytics DebugView
 - [ ] **Feedback path: in-app feedback submits successfully and the row appears in D1 (`wrangler d1 execute DB --remote --command "SELECT * FROM feedback ORDER BY created_at DESC LIMIT 1"`)**
+- [ ] Web + desktop: every item in `docs/TEST-PLAN.md § Desktop + web` passes
 - [ ] Verify on a real device (not simulator) for the production build
 
 ## What you don't do

@@ -6,7 +6,7 @@ argument-hint: <feature name from PRD>
 Wear the **engineer hat** (`docs/PRINCIPLES.md § Role hats`). Implement: $ARGUMENTS
 
 Pre-flight (stop and ask if any fail):
-- PRD entry exists in `docs/PRD.md` for this feature.
+- PRD entry exists in `docs/PRD.md` for this feature. If `docs/BACKLOG.md` lists it, it must be `Ready`.
 - Design spec exists in `docs/DESIGN.md` if a UI is involved.
 
 Build order (strict):
@@ -21,5 +21,5 @@ Constraints:
 - No direct analytics SDK calls — always `track()` from `lib/analytics/client.ts`.
 - No premature abstraction — extract a shared component on the fourth similar screen, not the second.
 - Test the happy path on iOS + Android sim before declaring done.
-- After done, hand off to QA: `/test <feature>`.
+- After done, hand off to the product owner: `/accept <feature>`, then QA: `/test <feature>`.
 - Output: file diffs / paths only. No restating the spec, no code walkthrough unless asked.

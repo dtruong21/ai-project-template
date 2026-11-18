@@ -10,7 +10,7 @@ A starting point for solo-built mobile MVPs. Ships the Claude Code config, docs 
 
 | Layer | Content |
 |---|---|
-| **Claude config** | 7-role agent roster (idea-validator, product-strategist, ux-designer, developer, qa-engineer, release-manager, marketer) + 17 slash commands. Roles run **in the main loop as "hats"** (`docs/PRINCIPLES.md § Role hats`) by default — only `qa-engineer` spawns automatically; the rest are opt-in for big isolatable work. Tuned for Claude Pro usage limits. |
+| **Claude config** | 8-role agent roster (idea-validator, product-strategist, product-owner, ux-designer, developer, qa-engineer, release-manager, marketer) + 19 slash commands. Roles run **in the main loop as "hats"** (`docs/PRINCIPLES.md § Role hats`) by default — only `qa-engineer` spawns automatically; the rest are opt-in for big isolatable work. Tuned for Claude Pro usage limits. |
 | **Workflow** | Strict idea → spec → design → build → test → release pipeline with handoff rules |
 | **Design system family** | 3 cross-platform pre-built systems: `notion-github`, `linear-minimal`, `warm-playful`. Pick one per project during setup. |
 | **Analytics layer** | Tracking plan (`docs/TRACKING-PLAN.md`) + typed event registry + provider-agnostic client. `/track` keeps the doc and types in sync. |
@@ -62,7 +62,7 @@ This template lives in the [`react-native/`](.) subdir of a multi-stack template
 | **React Native** (this one) | `react-native/` | JavaScript ecosystem, EAS Build for cloud builds, Zustand + TanStack Query, NativeWind. Fastest iteration. |
 | **Flutter** | `../flutter/` | Dart strict typing, native compiled UI, Material 3, Riverpod with codegen, Codemagic for cloud builds. Strongest correctness guarantees. |
 
-Both share the same workflow (`/idea → /spec → /design → /build → /test → /release → /launch`), the same main-loop "hats" + slash-command shape (with the same 7-role opt-in agent roster each), the same 3 swappable design systems (notion-github, linear-minimal, warm-playful), and the same standing rules (MVP-first, UX priority, QA gate, analytics-first, token discipline). Pick the stack; the process is the same.
+Both share the same workflow (`/idea → /spec → /design → /build → /test → /release → /launch`), the same main-loop "hats" + slash-command shape (with the same 8-role opt-in agent roster each), the same 3 swappable design systems (notion-github, linear-minimal, warm-playful), and the same standing rules (MVP-first, UX priority, QA gate, analytics-first, token discipline). Pick the stack; the process is the same.
 
 ## Why Firebase
 
@@ -81,8 +81,8 @@ If you're considering a different backend (Supabase, custom Node, etc.), this te
 
 ```
 .claude/
-  agents/          7 role agents (idea-validator → marketer) — only qa-engineer spawns by default
-  commands/        17 slash commands (workflow + micro-tasks + scaffolds + marketing)
+  agents/          8 role agents (idea-validator → marketer) — only qa-engineer spawns by default
+  commands/        19 slash commands (workflow + micro-tasks + scaffolds + marketing)
 design-systems/    3 pre-built systems (pick one in SETUP.md Step 3.5)
   notion-github/   tokens.ts + DESIGN.md + tailwind preset + mood.svg
   linear-minimal/  ...

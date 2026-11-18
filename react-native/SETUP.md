@@ -294,7 +294,7 @@ This keeps the template small and avoids stale boilerplate. The Claude config + 
 Before you start serious work, verify the token discipline is in place:
 
 1. Open Claude Code in the project dir.
-2. Type `/help` — you should see all 17 slash commands listed.
+2. Type `/help` — you should see all 19 slash commands listed.
 3. Type `/scope-check coffee tracker` — should return a 3-line verdict.
 
 If both work, the template is wired correctly.

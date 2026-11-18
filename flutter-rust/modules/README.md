@@ -5,12 +5,13 @@ Optional features a project turns on only when its idea needs them. The core sta
 | Module | Adds | Enable |
 |---|---|---|
 | [`files`](files/README.md) | Image/PDF upload to R2, list, view, delete; per-user quota; erased with the account | `python3 modules/files/apply.py` |
+| [`push`](push/README.md) | Push notifications via FCM: opt-in switch in Settings, device registry, server-side sending, dead-token cleanup; erased with the account | `python3 modules/push/apply.py` |
 
-Not built yet, in rough order of likely need: push notifications (FCM), payments / subscriptions, AI endpoint, realtime, offline cache. Build one when a real app needs it, not before.
+Not built yet, in rough order of likely need: payments / subscriptions, AI endpoint, realtime, offline cache. Build one when a real app needs it, not before.
 
 ## How enabling works
 
-`apply.py` does four things and is safe to run twice:
+Each `apply.py` is a short declaration of what to change; the machinery is in `modules/apply_lib.py`. It does four things and is safe to run twice (modules can be applied in any order, and together):
 
 1. copies the module's files into the project (never overwrites a file that already exists);
 2. inserts a few lines at the `// modules: <name>` markers in the core (route table, account deletion, settings screen, router, API test);
@@ -29,7 +30,9 @@ The markers in the core are a contract. Do not delete them; a module that cannot
 | `// modules: user-tables` | `rust/api/src/account.rs` | `DELETE FROM <table> WHERE uid = ?1` |
 | `// modules: before-delete` | `rust/api/src/account.rs` | cleanup that must run before rows go (e.g. stored files) |
 | `// modules: core` | `rust/core/src/api/mod.rs` | `pub mod <name>;` |
+| `// modules: setup` | `rust/api/tests/api_test.py` | code that runs before the Worker starts (start fakes, append to `EXTRA_VARS`) |
 | `// modules: tests` | `rust/api/tests/api_test.py` | its end-to-end block |
+| `// modules: teardown` | `rust/api/tests/api_test.py` | stop what `setup` started |
 | `// modules: settings-links` | `lib/features/settings/presentation/settings_screen.dart` | a row linking to its screen |
 | `// modules: routes` | `lib/core/routing/router.dart` | its `GoRoute`s |
 

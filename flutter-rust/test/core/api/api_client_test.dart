@@ -162,4 +162,16 @@ void main() {
       ),
     );
   });
+
+  test('deleteJson sends DELETE with a JSON body', () async {
+    late http.Request seen;
+    final client = _client((request) async {
+      seen = request;
+      return http.Response('', 204);
+    });
+    await client.deleteJson('/v1/push/token', '{"token":"t"}');
+    expect(seen.method, 'DELETE');
+    expect(seen.body, '{"token":"t"}');
+    expect(seen.headers['Content-Type'], startsWith('application/json'));
+  });
 }

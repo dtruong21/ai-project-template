@@ -173,10 +173,11 @@ The script copies `tokens.dart` + `theme.dart` into `lib/core/design/`, `DESIGN.
 
 ## Step 5.5 — Optional modules
 
-Features most apps don't need live in [`modules/`](modules/README.md) and are switched on per project — for example file uploads:
+Features most apps don't need live in [`modules/`](modules/README.md) and are switched on per project — file uploads, push notifications:
 
 ```bash
 python3 modules/files/apply.py
+python3 modules/push/apply.py      # then the one-time setup in modules/push/README.md
 ```
 
 Each module's README says what it adds, its limits, and what was verified. Skip this step until a feature in your PRD needs one.

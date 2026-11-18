@@ -55,6 +55,10 @@ class ApiClient {
   /// `DELETE`. Completes normally on any 2xx.
   Future<void> delete(String path) => _send('DELETE', path);
 
+  /// `DELETE` with a JSON body (e.g. naming which device token to remove).
+  Future<void> deleteJson(String path, String jsonBody) =>
+      _send('DELETE', path, jsonBody);
+
   /// `POST` raw bytes (an upload). Returns the response body (JSON text).
   Future<String> postBytes(
     String path,

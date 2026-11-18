@@ -50,6 +50,12 @@ FAR_FUTURE = 4102444800  # 2100-01-01
 # storage directly (e.g. that account deletion really removed stored bytes).
 STATE_DIR: Path | None = None
 
+# Modules append `NAME:VALUE` strings here from their setup hook (see
+# modules/README.md); each becomes a `--var` for the Worker. Modules keep
+# their own fakes in MODULE_STATE.
+EXTRA_VARS: list[str] = []
+MODULE_STATE: dict = {}
+
 failures: list[str] = []
 passed = 0
 
@@ -360,6 +366,7 @@ def main() -> int:
     try:
         signer = Signer(workdir)
         server = serve_jwks(workdir)
+        # modules: setup
 
         print("applying migrations to a fresh local database…")
         subprocess.run(
@@ -374,7 +381,8 @@ def main() -> int:
                 ["npx", "wrangler", "dev", "--port", str(API_PORT), "--ip", "127.0.0.1",
                  "--persist-to", str(state),
                  "--var", f"FIREBASE_PROJECT_ID:{PROJECT_ID}",
-                 "--var", f"FIREBASE_JWKS_URL:http://127.0.0.1:{JWKS_PORT}/jwks.json"],
+                 "--var", f"FIREBASE_JWKS_URL:http://127.0.0.1:{JWKS_PORT}/jwks.json",
+                 *[arg for var in EXTRA_VARS for arg in ("--var", var)]],
                 cwd=API_DIR, env=env, stdout=log_file, stderr=subprocess.STDOUT,
                 start_new_session=True,
             )
@@ -390,6 +398,7 @@ def main() -> int:
                 os.killpg(process.pid, signal.SIGKILL)
         if server is not None:
             server.shutdown()
+        # modules: teardown
         if failures and log.exists():
             print(f"\n--- wrangler log (tail) ---\n{log.read_text()[-2000:]}")
         shutil.rmtree(workdir, ignore_errors=True)

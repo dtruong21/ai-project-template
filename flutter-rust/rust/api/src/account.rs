@@ -16,6 +16,7 @@ use crate::{auth, http};
 const DELETE_USER_ROWS: &[&str] = &[
     "DELETE FROM feedback WHERE uid = ?1",
     "DELETE FROM profiles WHERE uid = ?1",
+    // modules: user-tables
 ];
 
 pub async fn delete(req: Request, ctx: RouteContext<()>) -> Result<Response> {
@@ -23,6 +24,8 @@ pub async fn delete(req: Request, ctx: RouteContext<()>) -> Result<Response> {
         Ok(uid) => uid,
         Err(reason) => return http::unauthenticated(reason),
     };
+
+    // modules: before-delete
 
     let db = ctx.env.d1("DB")?;
     let mut statements = Vec::with_capacity(DELETE_USER_ROWS.len());

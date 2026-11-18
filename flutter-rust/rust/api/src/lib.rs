@@ -19,6 +19,7 @@ mod auth;
 mod feedback;
 mod http;
 mod profile;
+// modules: mods
 
 #[event(fetch)]
 async fn fetch(req: Request, env: Env, _ctx: Context) -> Result<Response> {
@@ -31,6 +32,7 @@ async fn fetch(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         .get_async("/v1/profile", profile::get)
         .put_async("/v1/profile", profile::put)
         .delete_async("/v1/account", account::delete)
+        // modules: routes
         .or_else_any_method("/*path", |_, _| http::not_found())
         .run(req, env)
         .await;

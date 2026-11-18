@@ -34,6 +34,7 @@ import tempfile
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -44,6 +45,10 @@ API_PORT = int(os.environ.get("API_TEST_PORT", "8791"))
 JWKS_PORT = int(os.environ.get("API_TEST_JWKS_PORT", "8792"))
 BASE = f"http://127.0.0.1:{API_PORT}"
 FAR_FUTURE = 4102444800  # 2100-01-01
+
+# Where the temporary D1 / R2 state lives; set by main(). Lets a test look at
+# storage directly (e.g. that account deletion really removed stored bytes).
+STATE_DIR: Path | None = None
 
 failures: list[str] = []
 passed = 0
@@ -116,9 +121,9 @@ def call(method: str, path: str, token: str | None = None, body=None, raw: bytes
         request.add_header("Content-Type", "application/json")
     try:
         with urllib.request.urlopen(request, timeout=20) as response:
-            status, text = response.status, response.read().decode()
+            status, text = response.status, response.read().decode(errors="replace")
     except urllib.error.HTTPError as error:
-        status, text = error.code, error.read().decode()
+        status, text = error.code, error.read().decode(errors="replace")
     try:
         return status, json.loads(text)
     except ValueError:
@@ -294,6 +299,8 @@ def run_tests(signer: Signer) -> None:
     )
     expect("bob has no profile (cannot see alice's)", call("GET", "/v1/profile", bob), 404, "not_found")
 
+    # modules: tests
+
     print("account deletion")
     call("PUT", "/v1/profile", bob, {"display_name": "Bob"})
     expect("alice deletes her account", call("DELETE", "/v1/account", alice), 204)
@@ -344,6 +351,8 @@ def main() -> int:
 
     workdir = Path(tempfile.mkdtemp(prefix="api-test-"))
     state = workdir / "state"
+    global STATE_DIR
+    STATE_DIR = state
     log = workdir / "wrangler.log"
     env = {**os.environ, "WRANGLER_SEND_METRICS": "false", "CI": "1"}
     process = None

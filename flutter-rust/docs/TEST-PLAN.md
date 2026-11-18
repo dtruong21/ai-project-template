@@ -90,6 +90,7 @@ Failure modes that bite mobile + Firebase apps regardless of feature:
 - [ ] API denies cross-user access: with user A's token, reading/updating/deleting user B's row id returns 404; with no token every `/v1/*` route returns 401.
 - [ ] Every route in `rust/api/src/` calls `auth::uid_from_request` before touching D1, and every SQL statement uses bound parameters (`grep -n "format!" rust/api/src/` shows no SQL).
 - [ ] `.env` is gitignored — `git log --all -p -- .env` returns nothing.
+- [ ] If a module is enabled (`modules/`): its API test block passes, and its README's "Security properties" each have a check.
 - [ ] No `package:http` imports outside `lib/core/api/` (`grep -r "package:http" lib/ --include="*.dart" | grep -v "lib/core/api"` returns nothing).
 
 ### Visual + a11y

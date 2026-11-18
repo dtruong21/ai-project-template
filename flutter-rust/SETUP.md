@@ -171,6 +171,18 @@ The script copies `tokens.dart` + `theme.dart` into `lib/core/design/`, `DESIGN.
 
 ---
 
+## Step 5.5 — Optional modules
+
+Features most apps don't need live in [`modules/`](modules/README.md) and are switched on per project — for example file uploads:
+
+```bash
+python3 modules/files/apply.py
+```
+
+Each module's README says what it adds, its limits, and what was verified. Skip this step until a feature in your PRD needs one.
+
+---
+
 ## Step 6 — Define your pillars in `docs/PRD.md`
 
 Replace the pillar placeholders with 2–4 *actual* pillars. **This is the most important step.** Every future feature is scored against them by `/spec` and `/scope-check`.

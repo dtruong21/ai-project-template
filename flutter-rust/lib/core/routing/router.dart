@@ -63,6 +63,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
+      // modules: routes
       // Debug-only: never registered in release builds.
       if (kDebugMode)
         GoRoute(

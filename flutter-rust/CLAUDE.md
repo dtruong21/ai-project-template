@@ -31,6 +31,7 @@ android/ ios/       native projects · rust_builder/ compiles rust/core into the
 rust/shared/        wire models + validate() — no I/O
 rust/core/src/api/  app-side Rust exposed to Dart (build_*_payload)
 rust/api/           Worker: src/ (lib.rs routes, auth.rs, http.rs, one file per table) · migrations/ · tests/api_test.py
+modules/            optional features; `modules/README.md` lists them and the `// modules:` markers in the core (never delete a marker)
 docs/               specs, process, release
 ```
 
@@ -40,7 +41,8 @@ docs/               specs, process, release
 - Backend only via `lib/core/api/api_client.dart`. Never import `package:http` from feature code. No client-to-database path exists.
 - Every Worker route, in order: `auth::uid_from_request` → `http::parse_body` → `validate()` → bound-parameter SQL scoped by the token uid. Never accept a uid from the client; no `format!` in `rust/api`.
 - Every error response goes through `rust/api/src/http.rs` (`{"error": {code, message}}`, codes in `shared::codes`). Lists are keyset-paged like `feedback::list`.
-- New table with a `uid` column → add it to `rust/api/src/account.rs` and to `rust/api/tests/api_test.py`.
+- New table with a `uid` column → add it to `rust/api/src/account.rs` and to `rust/api/tests/api_test.py`. Data kept outside D1 (files, caches) is erased in the `before-delete` marker there.
+- Optional capabilities are modules (`modules/`), enabled per project. Don't add one to the core until two real apps needed it.
 - Validation rules live once, in `rust/shared`. Never re-implement one in Dart or in `rust/api`.
 - After touching `rust/core/src/api/`: `flutter_rust_bridge_codegen generate`. After touching `rust/`: `cargo test`; after touching `rust/api/`: `python3 rust/api/tests/api_test.py`.
 - Widgets are functions or `ConsumerWidget`. One screen = one widget in `features/<name>/presentation/`; logic in `application/`.

@@ -93,11 +93,16 @@ class _LinksCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: ListTile(
-        leading: const Icon(Icons.chat_bubble_outline),
-        title: const Text('My feedback'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => context.push('/settings/feedback'),
+      child: Column(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.chat_bubble_outline),
+            title: const Text('My feedback'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.push('/settings/feedback'),
+          ),
+          // modules: settings-links
+        ],
       ),
     );
   }

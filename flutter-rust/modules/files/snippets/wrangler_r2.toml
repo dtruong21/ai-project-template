@@ -1,0 +1,6 @@
+
+# Files module: R2 bucket for uploaded files.
+# Before deploying: `npx wrangler r2 bucket create app-files`
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "app-files"

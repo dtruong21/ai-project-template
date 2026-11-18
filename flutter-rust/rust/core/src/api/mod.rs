@@ -3,6 +3,7 @@
 
 pub mod feedback;
 pub mod profile;
+// modules: core
 
 #[flutter_rust_bridge::frb(init)]
 pub fn init_app() {

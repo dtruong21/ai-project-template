@@ -15,6 +15,8 @@ How {{PROJECT_NAME}} handles secrets, what's safe to commit, and what isn't.
 | `wrangler.toml` (D1 database id, Firebase project id) | **No** — identifiers, useless without Cloudflare credentials | `rust/api/wrangler.toml` | **Yes** |
 | Cloudflare API token | **YES — secret** (can deploy code and read/delete all data) | Codemagic env var / your password manager | **NEVER commit** |
 | Worker secrets (third-party API keys used server-side) | **YES — secret** | `wrangler secret put` (prod), `rust/api/.dev.vars` (local, gitignored) | **NEVER commit** |
+| RevenueCat secret API key (payments module) | **YES — secret** (can read and delete customers) | Worker secret `REVENUECAT_API_KEY` only | **NEVER commit** |
+| RevenueCat public SDK keys | No — meant to ship in the app | `.env` (`REVENUECAT_API_KEY_IOS` / `_ANDROID`) | Optional |
 | Firebase Admin SDK service account JSON | **YES — secret** (the core does not need one; the push module needs a *narrowly scoped* one — see `modules/push/README.md`) | Worker secret `FCM_SERVICE_ACCOUNT` only | **NEVER commit** |
 | Android signing keystore | **YES — secret** | Codemagic Code Signing | **NEVER commit** |
 | iOS distribution certificate | **YES — secret** | Codemagic Code Signing / Apple Developer | **NEVER commit** |
@@ -122,6 +124,7 @@ Known gaps in the starter, to close before real traffic: no rate limiting on rou
 - [ ] `git log --all -p -- .env` returns nothing
 - [ ] Every route in `rust/api/src/` calls `auth::uid_from_request` first (only `/health` is public) and scopes SQL by that uid
 - [ ] No hand-built SQL: `grep -n "format!" rust/api/src/` returns nothing
+- [ ] If the payments module is on: the RevenueCat secret key and `REVENUECAT_WEBHOOK_SECRET` are Worker secrets; `REVENUECAT_BASE_URL` is not set on any deployed Worker; `/v1/pro/ping` was replaced or deleted; the paywall links to your Terms and Privacy Policy
 - [ ] If the push module is on: `FCM_SERVICE_ACCOUNT` belongs to a service account limited to the FCM role; `FCM_BASE_URL` is not set on any deployed Worker; `PUSH_ADMIN_KEY` is either unset or stored in a password manager
 - [ ] `FIREBASE_JWKS_URL` is not set anywhere deployed: `npx wrangler deploy --dry-run` output and the dashboard's Variables list do not contain it (it replaces Google's signing keys — test-only)
 - [ ] `python3 rust/api/tests/api_test.py` passes

@@ -69,6 +69,14 @@ final _offline = ApiNetworkException(
   StackTrace.empty,
 );
 
+/// The button can sit below the fold once modules add rows to the screen.
+Future<void> _tapDeleteAccount(WidgetTester tester) async {
+  final button = find.widgetWithText(AppButton, 'Delete account');
+  await tester.ensureVisible(button);
+  await tester.pumpAndSettle();
+  await tester.tap(button);
+}
+
 void main() {
   group('SettingsScreen', () {
     Future<void> pump(
@@ -124,7 +132,7 @@ void main() {
       await pump(tester, deleteAccount: () async => deletions++);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(AppButton, 'Delete account'));
+      await _tapDeleteAccount(tester);
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(AppButton, 'Cancel'));
       await tester.pumpAndSettle();
@@ -139,7 +147,7 @@ void main() {
       await pump(tester, deleteAccount: () async => deletions++);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(AppButton, 'Delete account'));
+      await _tapDeleteAccount(tester);
       await tester.pumpAndSettle();
       // The dialog's confirm button is the last "Delete account" button.
       await tester.tap(find.widgetWithText(AppButton, 'Delete account').last);
@@ -155,7 +163,7 @@ void main() {
       await pump(tester, deleteAccount: () async => throw _offline);
       await tester.pumpAndSettle();
 
-      await tester.tap(find.widgetWithText(AppButton, 'Delete account'));
+      await _tapDeleteAccount(tester);
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(AppButton, 'Delete account').last);
       await tester.pumpAndSettle();

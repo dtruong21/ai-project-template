@@ -5,9 +5,10 @@ Optional features a project turns on only when its idea needs them. The core sta
 | Module | Adds | Enable |
 |---|---|---|
 | [`files`](files/README.md) | Image/PDF upload to R2, list, view, delete; per-user quota; erased with the account | `python3 modules/files/apply.py` |
+| [`payments`](payments/README.md) | In-app subscriptions and unlocks via RevenueCat (App Store / Google Play): server-held entitlements, webhook, server-side gating, paywall screen; erased with the account | `python3 modules/payments/apply.py` |
 | [`push`](push/README.md) | Push notifications via FCM: opt-in switch in Settings, device registry, server-side sending, dead-token cleanup; erased with the account | `python3 modules/push/apply.py` |
 
-Not built yet, in rough order of likely need: payments / subscriptions, AI endpoint, realtime, offline cache. Build one when a real app needs it, not before.
+Not built yet, in rough order of likely need: AI endpoint, Stripe (web / physical-goods payments), realtime, offline cache. Build one when a real app needs it, not before.
 
 ## How enabling works
 
